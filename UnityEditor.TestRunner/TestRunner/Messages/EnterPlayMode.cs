@@ -22,7 +22,7 @@ namespace UnityEngine.TestTools
         /// Throws an exception if the Editor is already in Play Mode or if there is a script compilation error.
         /// </summary>
         /// <param name="expectDomainReload">A flag indication whether to expect a domain reload.</param>
-        public EnterPlayMode(bool expectDomainReload = true)
+        public EnterPlayMode(bool expectDomainReload = false) // XXX: Don't reload assemblies, too slow.
         {
             ExpectDomainReload = expectDomainReload;
         }
