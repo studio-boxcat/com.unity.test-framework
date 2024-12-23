@@ -88,7 +88,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             yield return new ResetInteractionModeTask();
             yield return new RestoreSceneSetupTask();
             yield return new DeleteBootstrapSceneTask();
-            yield return new PerformUndoTask();
+            // yield return new PerformUndoTask(); // XXX: No PerformUndoTask, too slow & effect is unclear.
             yield return new CleanupVerificationTask();
             yield return new UnlockReloadAssembliesTask();
         }
