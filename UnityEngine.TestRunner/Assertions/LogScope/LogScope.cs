@@ -74,6 +74,10 @@ namespace UnityEngine.TestTools.Logging
 
         public void AddLog(string message, string stacktrace, LogType type)
         {
+            // Ignore regular logs to avoid Unity Editor freezing
+            if (type is LogType.Log)
+                return;
+
             lock (m_Lock)
             {
                 m_NeedToProcessLogs = true;
