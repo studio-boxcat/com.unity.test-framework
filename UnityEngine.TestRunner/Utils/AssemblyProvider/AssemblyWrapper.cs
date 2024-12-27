@@ -8,12 +8,12 @@ namespace UnityEngine.TestTools.Utils
         public AssemblyWrapper(Assembly assembly)
         {
             Assembly = assembly;
-            Name = assembly.GetName();
+            Name = assembly.GetName().Name;
         }
 
         public Assembly Assembly { get; }
 
-        public AssemblyName Name { get; }
+        public string Name { get; }
 
         public virtual string Location
         {
@@ -24,7 +24,7 @@ namespace UnityEngine.TestTools.Utils
             }
         }
 
-        public virtual AssemblyName[] GetReferencedAssemblies()
+        public virtual string[] GetReferencedAssemblies()
         {
             //Some platforms dont support this
             throw new NotImplementedException();

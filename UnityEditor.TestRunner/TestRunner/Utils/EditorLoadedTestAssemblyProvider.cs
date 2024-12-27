@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using UnityEditor;
 using UnityEditor.Scripting.ScriptCompilation;
 using UnityEngine.TestTools;
 using UnityEngine.TestTools.Utils;
@@ -39,7 +37,7 @@ namespace UnityEditor.TestTools.TestRunner
 
         public IEnumerator<IDictionary<TestPlatform, List<IAssemblyWrapper>>> GetAssembliesGroupedByTypeAsync(TestPlatform mode)
         {
-            IAssemblyWrapper[] loadedAssemblies = m_EditorAssembliesProxy.loadedAssemblies;
+            var loadedAssemblies = m_EditorAssembliesProxy.loadedAssemblies.ToDictionary(p => p.Name, p => p);
 
             IDictionary<TestPlatform, List<IAssemblyWrapper>> result = new Dictionary<TestPlatform, List<IAssemblyWrapper>>
             {
@@ -67,10 +65,10 @@ namespace UnityEditor.TestTools.TestRunner
             yield return result;
         }
 
-        private IAssemblyWrapper[] FilterAssembliesWithTestReference(IAssemblyWrapper[] loadedAssemblies)
+        private static IAssemblyWrapper[] FilterAssembliesWithTestReference(Dictionary<string, IAssemblyWrapper> loadedAssemblies)
         {
             var filteredResults = new Dictionary<IAssemblyWrapper, bool>();
-            foreach (var assembly in loadedAssemblies)
+            foreach (var assembly in loadedAssemblies.Values)
             {
                 FilterAssemblyForTestReference(assembly, loadedAssemblies, filteredResults, new Dictionary<IAssemblyWrapper, bool>());
             }
@@ -78,18 +76,14 @@ namespace UnityEditor.TestTools.TestRunner
             return filteredResults.Where(pair => pair.Value).Select(pair => pair.Key).ToArray();
         }
 
-        private void FilterAssemblyForTestReference(IAssemblyWrapper assemblyToFilter, IAssemblyWrapper[] loadedAssemblies,
+        private static void FilterAssemblyForTestReference(IAssemblyWrapper assemblyToFilter, Dictionary<string, IAssemblyWrapper> loadedAssemblies,
             IDictionary<IAssemblyWrapper, bool> filterResults, IDictionary<IAssemblyWrapper, bool> resultsAlreadyAnalyzed)
         {
-            if(resultsAlreadyAnalyzed.ContainsKey(assemblyToFilter))
-            {
+            if(resultsAlreadyAnalyzed.TryAdd(assemblyToFilter, true) is false)
                 return;
-            }
-
-            resultsAlreadyAnalyzed[assemblyToFilter] = true;
 
             var references = assemblyToFilter.GetReferencedAssemblies();
-            if (references.Any(IsTestReference))
+            if (references.Any(_isTestReference ??= IsTestReference))
             {
                 filterResults[assemblyToFilter] = true;
                 return;
@@ -97,7 +91,7 @@ namespace UnityEditor.TestTools.TestRunner
 
             foreach (var reference in references)
             {
-                var referencedAssembly = loadedAssemblies.FirstOrDefault(a => a.Name.Name == reference.Name);
+                var referencedAssembly = loadedAssemblies.GetValueOrDefault(reference);
                 if (referencedAssembly == null)
                 {
                     continue;
@@ -115,11 +109,13 @@ namespace UnityEditor.TestTools.TestRunner
             filterResults[assemblyToFilter] = false;
         }
 
-        private static bool IsTestReference(AssemblyName assemblyName)
+        private static Func<string, bool> _isTestReference;
+
+        private static bool IsTestReference(string assemblyName)
         {
-            return assemblyName.Name == k_NunitAssemblyName ||
-                   assemblyName.Name == k_TestRunnerAssemblyName ||
-                   assemblyName.Name == k_PerformanceTestingAssemblyName;
+            return assemblyName == k_NunitAssemblyName ||
+                   assemblyName == k_TestRunnerAssemblyName ||
+                   assemblyName == k_PerformanceTestingAssemblyName;
         }
     }
 }
