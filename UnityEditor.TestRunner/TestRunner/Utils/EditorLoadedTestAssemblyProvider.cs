@@ -86,7 +86,7 @@ namespace UnityEditor.TestTools.TestRunner
                 return;
 
             var references = assemblyToFilter.GetReferencedAssemblies();
-            if (references.Any(_isTestReference ??= IsTestReference))
+            if (AnyTestReference(references))
             {
                 filterResults[assemblyToFilter] = true;
                 return;
@@ -112,13 +112,22 @@ namespace UnityEditor.TestTools.TestRunner
             filterResults[assemblyToFilter] = false;
         }
 
-        private static Func<string, bool> _isTestReference;
-
-        private static bool IsTestReference(string assemblyName)
+        private static readonly HashSet<string> s_TestReferences = new()
         {
-            return assemblyName == k_NunitAssemblyName ||
-                   assemblyName == k_TestRunnerAssemblyName ||
-                   assemblyName == k_PerformanceTestingAssemblyName;
+            k_NunitAssemblyName,
+            k_TestRunnerAssemblyName,
+            k_PerformanceTestingAssemblyName
+        };
+
+        private static bool AnyTestReference(string[] references)
+        {
+            // Avoid linq to reduce allocations.
+            foreach (var reference in references)
+            {
+                if (s_TestReferences.Contains(reference))
+                    return true;
+            }
+            return false;
         }
     }
 }
