@@ -68,9 +68,12 @@ namespace UnityEditor.TestTools.TestRunner
         private static IAssemblyWrapper[] FilterAssembliesWithTestReference(Dictionary<string, IAssemblyWrapper> loadedAssemblies)
         {
             var filteredResults = new Dictionary<IAssemblyWrapper, bool>();
+            // Reuse one dictionary instead of re-creating it for each assembly
+            var resultsAlreadyAnalyzed = new Dictionary<IAssemblyWrapper, bool>();
+
             foreach (var assembly in loadedAssemblies.Values)
             {
-                FilterAssemblyForTestReference(assembly, loadedAssemblies, filteredResults, new Dictionary<IAssemblyWrapper, bool>());
+                FilterAssemblyForTestReference(assembly, loadedAssemblies, filteredResults, resultsAlreadyAnalyzed);
             }
 
             return filteredResults.Where(pair => pair.Value).Select(pair => pair.Key).ToArray();
