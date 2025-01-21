@@ -130,6 +130,8 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             {
                 try
                 {
+                    next:
+
                     if (m_JobData.taskInfoStack.Count == 0)
                     {
                         StopRun();
@@ -186,7 +188,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
                             taskInfo.pc = 0;
                             m_Enumerator = null;
 
-                            return;
+                            goto next;
                         }
                     }
 
