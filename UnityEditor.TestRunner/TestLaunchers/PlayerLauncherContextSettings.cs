@@ -21,9 +21,6 @@ namespace UnityEditor.TestTools.TestRunner
 #if !UNITY_6000_0_OR_NEWER
         private string m_OldAotOptions;
 #endif
-#pragma warning disable 618
-        private Lightmapping.GIWorkflowMode m_OldLightmapping;
-#pragma warning restore 618
         private bool m_explicitNullChecks;
 
         private bool m_Disposed;
@@ -85,11 +82,6 @@ namespace UnityEditor.TestTools.TestRunner
             m_OldproductName = PlayerSettings.productName;
             PlayerSettings.productName = string.Join("_", Application.productName.Split(Path.GetInvalidFileNameChars()));
 
-#pragma warning disable 618
-            m_OldLightmapping = Lightmapping.giWorkflowMode;
-            Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
-#pragma warning restore 618
-
             m_explicitNullChecks = EditorUserBuildSettings.explicitNullChecks;
             EditorUserBuildSettings.explicitNullChecks = true;
         }
@@ -110,9 +102,6 @@ namespace UnityEditor.TestTools.TestRunner
 #if !UNITY_6000_0_OR_NEWER
             PlayerSettings.aotOptions = m_OldAotOptions;
 #endif
-#pragma warning disable 618
-            Lightmapping.giWorkflowMode = m_OldLightmapping;
-#pragma warning restore 618
             EditorUserBuildSettings.explicitNullChecks = m_explicitNullChecks;
 
             EditorApplication.UnlockReloadAssemblies();
