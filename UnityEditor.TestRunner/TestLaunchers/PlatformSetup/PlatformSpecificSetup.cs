@@ -19,15 +19,6 @@ namespace UnityEditor.TestTools.TestRunner
         private AndroidPlatformSetup m_AndroidPlatformSetup = new AndroidPlatformSetup();
         [SerializeField]
         private SwitchPlatformSetup m_SwitchPlatformSetup = new SwitchPlatformSetup();
-#if UNITY_2019_3_OR_NEWER
-        [SerializeField]
-        private StadiaPlatformSetup m_StadiaPlatformSetup = new StadiaPlatformSetup();
-#endif
-        [SerializeField]
-        private UwpPlatformSetup m_UwpPlatformSetup = new UwpPlatformSetup();
-
-        [SerializeField]
-        private LuminPlatformSetup m_LuminPlatformSetup = new LuminPlatformSetup();
 
 
         private IDictionary<BuildTarget, IPlatformSetup> m_SetupTypes;
@@ -114,13 +105,6 @@ namespace UnityEditor.TestTools.TestRunner
                 {BuildTarget.XboxOne, m_XboxOnePlatformSetup},
 #endif
                 {BuildTarget.Android, m_AndroidPlatformSetup},
-                {BuildTarget.WSAPlayer, m_UwpPlatformSetup},
-#if !UNITY_2022_2_OR_NEWER
-                {BuildTarget.Lumin, m_LuminPlatformSetup},
-#endif
-#if UNITY_2019_3_OR_NEWER && !UNITY_2023_1_OR_NEWER
-                {BuildTarget.Stadia, m_StadiaPlatformSetup},
-#endif
                 {BuildTarget.Switch, m_SwitchPlatformSetup}
             };
             return m_SetupTypes;
