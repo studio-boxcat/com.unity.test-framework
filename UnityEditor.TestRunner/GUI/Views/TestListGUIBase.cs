@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.TestTools.TestRunner.Api;
-using UnityEditor.TestTools.TestRunner.GUI.TestAssets;
 using UnityEngine;
 
 namespace UnityEditor.TestTools.TestRunner.GUI
@@ -337,7 +336,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                         m_Window.Repaint();
                     }
                 }
-                RenderNoTestsInfo();
             }
             else
             {
@@ -349,46 +347,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 
             m_TestRunnerUIFilter.UpdateCounters(newResultList, filteredTree);
             EditorGUILayout.EndScrollView();
-        }
-
-        private void RenderNoTestsInfo()
-        {
-            var testScriptAssetsCreator = new TestScriptAssetsCreator();
-            if (!testScriptAssetsCreator.ActiveFolderContainsTestAssemblyDefinition())
-            {
-                var noTestsText = "No tests to show.";
-
-                if (!PlayerSettings.playModeTestRunnerEnabled)
-                {
-                    const string testsMustLiveInCustomTestAssemblies =
-                        "Test scripts can be added to assemblies referencing the \"nunit.framework.dll\" library " +
-                        "or folders with Assembly Definition References targeting \"UnityEngine.TestRunner\" or \"UnityEditor.TestRunner\".";
-
-                    noTestsText += Environment.NewLine + testsMustLiveInCustomTestAssemblies;
-                }
-
-                EditorGUILayout.HelpBox(noTestsText, MessageType.Info);
-                if (GUILayout.Button("Create a new Test Assembly Folder in the active path."))
-                {
-                    testScriptAssetsCreator.AddNewFolderWithTestAssemblyDefinition(m_TestMode == TestMode.EditMode);
-                }
-            }
-
-            const string notTestAssembly = "Test Scripts can only be created inside test assemblies.";
-            const string createTestScriptInCurrentFolder = "Create a new Test Script in the active path.";
-            var canAddTestScriptAndItWillCompile = testScriptAssetsCreator.TestScriptWillCompileInActiveFolder();
-
-            using (new EditorGUI.DisabledScope(!canAddTestScriptAndItWillCompile))
-            {
-                var createTestScriptInCurrentFolderGUI = !canAddTestScriptAndItWillCompile
-                    ? new GUIContent(createTestScriptInCurrentFolder, notTestAssembly)
-                    : new GUIContent(createTestScriptInCurrentFolder);
-
-                if (GUILayout.Button(createTestScriptInCurrentFolderGUI))
-                {
-                    testScriptAssetsCreator.AddNewTestScript();
-                }
-            }
         }
 
         public void RenderDetails(float width)
