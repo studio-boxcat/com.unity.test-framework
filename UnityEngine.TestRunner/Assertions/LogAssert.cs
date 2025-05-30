@@ -105,10 +105,12 @@ namespace UnityEngine.TestTools
             }
             set
             {
+                /*
                 if (value != LogScope.Current.IgnoreFailingMessages)
                 {
                     Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "\nIgnoreFailingMessages:" + (value ? "true" : "false"));
                 }
+                */
                 LogScope.Current.IgnoreFailingMessages = value;
             }
         }
