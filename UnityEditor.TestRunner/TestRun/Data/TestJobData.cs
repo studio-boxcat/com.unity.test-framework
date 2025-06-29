@@ -99,9 +99,6 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
         public Scene InitTestScene;
 
         [SerializeField]
-        public string InitTestScenePath;
-
-        [SerializeField]
         public BuildPlayerOptions PlayerBuildOptions;
 
         [SerializeField]

@@ -26,21 +26,17 @@ namespace UnityEditor.TestTools.TestRunner
     {
         private readonly BuildTarget m_TargetPlatform;
         private ITestRunSettings m_OverloadTestRunSettings;
-        private string m_SceneName;
         private Scene m_Scene;
         private int m_HeartbeatTimeout;
-        private string m_PlayerWithTestsPath;
         private PlaymodeTestsController m_Runner;
 
         internal PlayerLauncherBuildOptions playerBuildOptions { get; private set; }
 
-        public PlayerLauncher(PlaymodeTestsControllerSettings settings, BuildTarget? targetPlatform, ITestRunSettings overloadTestRunSettings, int heartbeatTimeout, string playerWithTestsPath, string scenePath, Scene scene, PlaymodeTestsController runner) : base(settings)
+        public PlayerLauncher(PlaymodeTestsControllerSettings settings, BuildTarget? targetPlatform, ITestRunSettings overloadTestRunSettings, int heartbeatTimeout, Scene scene, PlaymodeTestsController runner) : base(settings)
         {
             m_TargetPlatform = targetPlatform ?? EditorUserBuildSettings.activeBuildTarget;
             m_OverloadTestRunSettings = overloadTestRunSettings;
             m_HeartbeatTimeout = heartbeatTimeout;
-            m_PlayerWithTestsPath = playerWithTestsPath;
-            m_SceneName = scenePath;
             m_Scene = scene;
             m_Runner = runner;
         }
@@ -61,7 +57,7 @@ namespace UnityEditor.TestTools.TestRunner
 
             using (var settings = new PlayerLauncherContextSettings(m_OverloadTestRunSettings))
             {
-                PrepareScene(m_SceneName, m_Scene, m_Runner);
+                PrepareScene(m_Runner);
 
                 var filter = m_Settings.BuildNUnitFilter();
                 var runner = LoadTests(filter);
@@ -76,7 +72,7 @@ namespace UnityEditor.TestTools.TestRunner
                 EditorSceneManager.MarkSceneDirty(m_Scene);
                 EditorSceneManager.SaveScene(m_Scene);
 
-                playerBuildOptions = GetBuildOptions(m_SceneName);
+                playerBuildOptions = GetBuildOptions();
 
                 var success = BuildAndRunPlayer(playerBuildOptions);
 
@@ -105,7 +101,7 @@ namespace UnityEditor.TestTools.TestRunner
             }
         }
 
-        public void PrepareScene(string sceneName, Scene scene, PlaymodeTestsController runner)
+        public void PrepareScene(PlaymodeTestsController runner)
         {
             runner.AddEventHandlerMonoBehaviour<PlayModeRunnerCallback>();
             var commandLineArgs = Environment.GetCommandLineArgs();
@@ -115,10 +111,6 @@ namespace UnityEditor.TestTools.TestRunner
             }
             runner.AddEventHandlerMonoBehaviour<PlayerQuitHandler>();
             runner.AddEventHandlerScriptableObject<TestRunCallbackListener>();
-
-            EditorSceneManager.MarkSceneDirty(scene);
-            AssetDatabase.SaveAssets();
-            EditorSceneManager.SaveScene(scene, sceneName, false);
         }
 
         private static bool BuildAndRunPlayer(PlayerLauncherBuildOptions buildOptions)
@@ -164,8 +156,11 @@ namespace UnityEditor.TestTools.TestRunner
             return result.summary.result == BuildResult.Succeeded;
         }
 
-        internal PlayerLauncherBuildOptions GetBuildOptions(string scenePath)
+        internal PlayerLauncherBuildOptions GetBuildOptions()
         {
+            throw new NotSupportedException("GetBuildOptions is not supported");
+
+            /*
             var buildOnly = false;
             var runSettings = m_OverloadTestRunSettings as PlayerLauncherTestRunSettings;
             if (runSettings != null)
@@ -265,6 +260,7 @@ namespace UnityEditor.TestTools.TestRunner
                 BuildPlayerOptions = ModifyBuildOptions(buildOptions),
                 PlayerDirectory = buildLocation,
             };
+        */
         }
 
         private BuildPlayerOptions ModifyBuildOptions(BuildPlayerOptions buildOptions)

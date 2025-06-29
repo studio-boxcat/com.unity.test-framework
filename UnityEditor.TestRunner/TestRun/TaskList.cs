@@ -25,7 +25,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             {
                 yield return new SaveModifiedSceneTask();
                 yield return new StoreSceneSetupTask();
-                yield return new CreateBootstrapSceneTask(true, true, NewSceneSetup.EmptyScene);
+                yield return new CreateBootstrapSceneTask(true, NewSceneSetup.EmptyScene);
                 yield return new DetermineRuntimePlatformTask();
                 yield return new PlatformSpecificSetupTask();
                 yield return new LegacyPlayerRunTask();
@@ -35,7 +35,6 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
                 yield return new WaitForPlayerRunTask();
                 yield return new PlatformSpecificCleanupTask();
                 yield return new RestoreSceneSetupTask();
-                yield return new DeleteBootstrapSceneTask();
                 yield return new UnlockReloadAssembliesTask();
                 yield break;
             }
@@ -55,7 +54,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             yield return new ReloadModifiedScenesTask();
             yield return new BuildNUnitFilterTask();
             yield return new BuildTestTreeTask(editMode ? TestPlatform.EditMode : TestPlatform.PlayMode);
-            yield return new CreateBootstrapSceneTask(!editMode, !editMode, editMode ? NewSceneSetup.DefaultGameObjects : NewSceneSetup.EmptyScene);
+            yield return new CreateBootstrapSceneTask(!editMode, editMode ? NewSceneSetup.DefaultGameObjects : NewSceneSetup.EmptyScene);
             yield return new CreateEventsTask();
             yield return new RegisterCallbackDelegatorEventsTask();
             yield return new RegisterTestRunCallbackEventsTask();
@@ -87,7 +86,6 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             yield return new CleanUpContext();
             yield return new ResetInteractionModeTask();
             yield return new RestoreSceneSetupTask();
-            yield return new DeleteBootstrapSceneTask();
             // yield return new PerformUndoTask(); // XXX: No PerformUndoTask, too slow & effect is unclear.
             yield return new CleanupVerificationTask();
             yield return new UnlockReloadAssembliesTask();

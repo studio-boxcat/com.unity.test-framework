@@ -66,7 +66,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
         [SerializeField]
         internal int randomOrderSeed;
 
-        internal string playerSavePath { get; set; }
         internal int retryCount { get; set; }
         internal int repeatCount { get; set; }
 
