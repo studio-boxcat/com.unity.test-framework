@@ -8,27 +8,36 @@ using UnityEngine;
 
 namespace UnityEditor.TestTools.TestRunner.GUI
 {
+    [Serializable]
     internal class TestListGUI
     {
         private static readonly GUIContent s_GUIRunSelectedTests = EditorGUIUtility.TrTextContent("Run Selected", "Run selected test(s)");
         private static readonly GUIContent s_GUIRunAllTests = EditorGUIUtility.TrTextContent("Run All", "Run all tests");
         private static readonly GUIContent s_GUIRerunFailedTests = EditorGUIUtility.TrTextContent("Rerun Failed", "Rerun all failed tests");
         private static readonly GUIContent s_GUIRun = EditorGUIUtility.TrTextContent("Run");
+        private static readonly GUIContent s_GUIRunUntilFailed = EditorGUIUtility.TrTextContent("Run Until Failed");
+        private static readonly GUIContent s_GUIRun100Times = EditorGUIUtility.TrTextContent("Run 100 times");
         private static readonly GUIContent s_GUIOpenTest = EditorGUIUtility.TrTextContent("Open source code");
         private static readonly GUIContent s_GUIOpenErrorLine = EditorGUIUtility.TrTextContent("Open error line");
         private static readonly GUIContent s_GUIClearResults = EditorGUIUtility.TrTextContent("Clear Results", "Clear all test results");
         private static readonly GUIContent s_SaveResults = EditorGUIUtility.TrTextContent("Export Results", "Save the latest test results to a file");
         private static readonly GUIContent s_GUICancelRun = EditorGUIUtility.TrTextContent("Cancel Run");
 
+        [SerializeField]
         private TestRunnerWindow m_Window;
+        [NonSerialized]
         private TestRunnerApi m_TestRunnerApi;
 
+        [NonSerialized]
         internal TestMode m_TestMode;
 
+        [NonSerialized]
         internal bool m_RunOnPlatform;
 
+        [NonSerialized] 
         internal bool m_buildOnly;
 
+        [SerializeField]
         private TestRunProgress runProgress;
         public Dictionary<string, TestTreeViewItem> filteredTree { get; set; }
 
@@ -42,6 +51,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             }
         }
 
+        [SerializeField]
         private List<TestRunnerResult> m_NewResultList = new List<TestRunnerResult>();
 
         private Dictionary<string, TestRunnerResult> m_ResultByKey;
@@ -67,11 +77,15 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             }
         }
 
+        [SerializeField]
         private string m_ResultText;
+        [SerializeField]
         private string m_ResultStacktrace;
 
         private TreeViewController m_TestListTree;
+        [SerializeField]
         internal TreeViewState m_TestListState;
+        [SerializeField]
         internal TestRunnerUIFilter m_TestRunnerUIFilter = new TestRunnerUIFilter();
 
         private Vector2 m_TestInfoScroll, m_TestListScroll;
@@ -102,6 +116,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             public bool filterSelectedTestsOnly;
         }
         
+        [SerializeField]
         private int m_SelectedOption;
 
         public void PrintHeadPanel()

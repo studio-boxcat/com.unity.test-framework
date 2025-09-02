@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.TestTools.TestRunner.Api;
+using UnityEngine;
 using UnityEngine.TestRunner.NUnitExtensions.Filters;
 
 namespace UnityEditor.TestTools.TestRunner.GUI
