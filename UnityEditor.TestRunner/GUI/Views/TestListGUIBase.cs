@@ -379,7 +379,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 
         public void Init(TestRunnerWindow window, ITestAdaptor rootTest)
         {
-            Init(window, new[] {rootTest});
+            Init(window, rootTest.Children.ToArray());
         }
 
         private void Init(TestRunnerWindow window, ITestAdaptor[] rootTests)
