@@ -24,8 +24,8 @@ namespace UnityEditor.TestTools.TestRunner
 
         protected UnityTestAssemblyRunner LoadTests(ITestFilter filter)
         {
-            var editorLoadedTestAssemblyProvider = new EditorLoadedTestAssemblyProvider(new EditorCompilationInterfaceProxy(), new EditorAssembliesProxy());
-            var assembliesWithTests = editorLoadedTestAssemblyProvider.GetAssembliesGroupedByType(TestPlatform.PlayMode).Select(x => x.Assembly.GetName().Name).ToList();
+            var editorLoadedTestAssemblyProvider = EditorLoadedTestAssemblyProvider.Instance;
+            var assembliesWithTests = editorLoadedTestAssemblyProvider.GetAssembliesGroupedByType(TestPlatform.PlayMode).Select(x => x.GetName().Name).ToList();
 
             var nUnitTestAssemblyRunner = new UnityTestAssemblyRunner(new UnityTestAssemblyBuilder(m_Settings.orderedTestNames, m_Settings.randomOrderSeed), null, UnityTestExecutionContext.CurrentContext);
             var assemblyProvider = new PlayerTestAssemblyProvider(new AssemblyLoadProxy(), assembliesWithTests);

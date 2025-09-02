@@ -171,7 +171,7 @@ namespace UnityEditor.TestTools.TestRunner.Api
             }
 
             var platform = ParseTestMode(testMode);
-            var testAssemblyProvider = new EditorLoadedTestAssemblyProvider(new EditorCompilationInterfaceProxy(), new EditorAssembliesProxy());
+            var testAssemblyProvider = EditorLoadedTestAssemblyProvider.Instance;
             var testAdaptorFactory = new TestAdaptorFactory();
             var testListCache = new TestListCache(testAdaptorFactory, new RemoteTestResultDataFactory(), TestListCacheData.instance);
             var testListProvider = new TestListProvider(testAssemblyProvider, new UnityTestAssemblyBuilder(null, 0));

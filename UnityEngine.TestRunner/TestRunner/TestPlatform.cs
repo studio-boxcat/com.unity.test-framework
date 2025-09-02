@@ -22,23 +22,4 @@ namespace UnityEngine.TestTools
         /// </summary>
         PlayMode = 1 << 2
     }
-
-    internal static class TestPlatformEnumExtensions
-    {
-        public static bool IsFlagIncluded(this TestPlatform flags, TestPlatform flag)
-        {
-            return (flags & flag) == flag;
-        }
-
-        public static TestPlatform MergeFlags(this TestPlatform[] flags)
-        {
-            TestPlatform mergedFlag = default;
-            foreach (var flag in flags)
-            {
-                mergedFlag |= flag;
-            }
-
-            return mergedFlag;
-        }
-    }
 }

@@ -25,9 +25,9 @@ namespace UnityEngine.TestTools.NUnitExtensions
             m_ProductName = Application.productName;
         }
 
-        public ITest Build(Assembly[] assemblies, TestPlatform[] testPlatforms, IDictionary<string, object> options)
+        public ITest Build(Assembly[] assemblies, TestPlatform testPlatform, IDictionary<string, object> options)
         {
-            var test = BuildAsync(assemblies, testPlatforms, options);
+            var test = BuildAsync(assemblies, testPlatform, options);
             while (test.MoveNext())
             {
             }
@@ -61,14 +61,14 @@ namespace UnityEngine.TestTools.NUnitExtensions
 
         private static Dictionary<PlatformAssembly, TestSuite> CachedAssemblies = new Dictionary<PlatformAssembly, TestSuite>();
 
-        public IEnumerator<ITest> BuildAsync(Assembly[] assemblies, TestPlatform[] testPlatforms, IDictionary<string, object> options)
+        public IEnumerator<ITest> BuildAsync(Assembly[] assemblies, TestPlatform testPlatform, IDictionary<string, object> options)
         {
             var productName = string.Join("_", m_ProductName.Split(Path.GetInvalidFileNameChars()));
             var suite = new TestSuite(productName);
             for (var index = 0; index < assemblies.Length; index++)
             {
                 var assembly = assemblies[index];
-                var platform = testPlatforms[index];
+                var platform = testPlatform;
 
                 using (new ProfilerMarker(nameof(UnityTestAssemblyBuilder) + "." + assembly.GetName().Name).Auto())
                 {
@@ -94,7 +94,7 @@ namespace UnityEngine.TestTools.NUnitExtensions
             }
 
             suite.ParseForNameDuplicates();
-            suite.Properties.Set("platform", testPlatforms.MergeFlags());
+            suite.Properties.Set("platform", testPlatform);
 
             foreach (var testSuiteModifier in m_TestSuiteModifiers)
             {

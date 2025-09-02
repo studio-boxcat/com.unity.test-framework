@@ -40,13 +40,11 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
             {
                 var go = new GameObject(PlaymodeTestsController.kPlaymodeTestControllerName);
 
-                var editorLoadedTestAssemblyProvider =
-                    new EditorLoadedTestAssemblyProvider(new EditorCompilationInterfaceProxy(),
-                        new EditorAssembliesProxy());
+                var editorLoadedTestAssemblyProvider = EditorLoadedTestAssemblyProvider.Instance;
 
                 var runner = go.AddComponent<PlaymodeTestsController>();
                 runner.AssembliesWithTests = editorLoadedTestAssemblyProvider
-                    .GetAssembliesGroupedByType(TestPlatform.PlayMode).Select(x => x.Assembly.GetName().Name)
+                    .GetAssembliesGroupedByType(TestPlatform.PlayMode).Select(x => x.GetName().Name)
                     .ToList();
                 runner.settings = settings;
                 testJobData.PlaymodeTestsController = runner;

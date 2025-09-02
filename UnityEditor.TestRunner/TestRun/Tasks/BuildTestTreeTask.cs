@@ -17,7 +17,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
             RerunAfterResume = true;
         }
 
-        internal IEditorLoadedTestAssemblyProvider m_testAssemblyProvider = new EditorLoadedTestAssemblyProvider(new EditorCompilationInterfaceProxy(), new EditorAssembliesProxy());
+        internal EditorLoadedTestAssemblyProvider m_testAssemblyProvider = EditorLoadedTestAssemblyProvider.Instance;
         internal Func<string[], int, IAsyncTestAssemblyBuilder> m_testAssemblyBuilderFactory = (orderedTestNames, seed) => new UnityTestAssemblyBuilder(orderedTestNames, seed);
         internal ICallbacksDelegator m_CallbacksDelegator = CallbacksDelegator.instance;
 
@@ -28,21 +28,11 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
                 yield break;
             }
 
-            var assembliesEnumerator = m_testAssemblyProvider.GetAssembliesGroupedByTypeAsync(m_TestPlatform);
-            while (assembliesEnumerator.MoveNext())
-            {
-                yield return null;
-            }
-
-            if (assembliesEnumerator.Current == null)
-            {
-                throw new Exception("Assemblies not retrieved.");
-            }
-
-            var assemblies = assembliesEnumerator.Current.Where(pair => m_TestPlatform.IsFlagIncluded(pair.Key)).SelectMany(pair => pair.Value).Select(x => x.Assembly).ToArray();
+            var assembliesEnumerator = m_testAssemblyProvider.GetAssembliesGroupedByType(m_TestPlatform);
+            var assemblies = assembliesEnumerator.ToArray();
             var buildSettings = UnityTestAssemblyBuilder.GetNUnitTestBuilderSettings(m_TestPlatform);
             var testAssemblyBuilder = m_testAssemblyBuilderFactory(testJobData.executionSettings.orderedTestNames, testJobData.executionSettings.randomOrderSeed);
-            var enumerator = testAssemblyBuilder.BuildAsync(assemblies, Enumerable.Repeat(m_TestPlatform, assemblies.Length).ToArray(), buildSettings);
+            var enumerator = testAssemblyBuilder.BuildAsync(assemblies, m_TestPlatform, buildSettings);
             while (enumerator.MoveNext())
             {
                 yield return null;
