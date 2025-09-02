@@ -29,11 +29,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
         [SerializeField]
         public string[] groupNames;
         /// <summary>
-        /// The name of a [Category](https://nunit.org/docs/2.2.7/category.html) to include in the run. Any test or fixtures runs that have a Category matching the string.
-        /// </summary>
-        [SerializeField]
-        public string[] categoryNames;
-        /// <summary>
         /// The name of assemblies included in the run. That is the assembly name, without the .dll file extension. E.g., MyTestAssembly
         /// </summary>
         [SerializeField]
@@ -57,7 +52,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
             stringBuilder.AppendLine($"{nameof(targetPlatform)} = {targetPlatform}");
             stringBuilder.AppendLine($"{nameof(testNames)} = " + (testNames == null ? "null" : string.Join(", ", testNames)));
             stringBuilder.AppendLine($"{nameof(groupNames)} = " + (groupNames == null ? "null" : string.Join(", ", groupNames)));
-            stringBuilder.AppendLine($"{nameof(categoryNames)} = " + (categoryNames == null ? "null" : string.Join(", ", categoryNames)));
             stringBuilder.AppendLine($"{nameof(assemblyNames)} = " + (assemblyNames == null ? "null" : string.Join(", ", assemblyNames)));
 
             return stringBuilder.ToString();
@@ -69,7 +63,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
             {
                 testMode = ConvertTestMode(testMode),
                 testNames = testNames,
-                categoryNames = categoryNames,
                 groupNames = groupNames,
                 assemblyNames = assemblyNames,
                 synchronousOnly = synchronousOnly
@@ -100,7 +93,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
         internal bool HasAny()
         {
             return assemblyNames != null && assemblyNames.Any()
-                   || categoryNames != null && categoryNames.Any()
                    || groupNames != null && groupNames.Any()
                    || testNames != null && testNames.Any();
         }

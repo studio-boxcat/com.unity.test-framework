@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.TestTools.TestRunner.Api;
@@ -38,7 +37,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 
             m_TestListGUI.newResultList = new List<TestRunnerResult>(testListBuilder.results);
             m_TestListGUI.filteredTree = testListBuilder.m_treeFiltered;
-            m_TestListGUI.m_TestRunnerUIFilter.availableCategories = testListBuilder.AvailableCategories;
             m_NeedRefreshRows = true;
         }
 

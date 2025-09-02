@@ -18,7 +18,6 @@ namespace UnityEngine.TestRunner.TestLaunchers
         public bool isSuite;
         public string[] childrenIds;
         public int testCaseTimeout;
-        public string[] Categories;
         public bool IsTestAssembly;
         public RunState RunState;
         public string Description;
@@ -42,7 +41,6 @@ namespace UnityEngine.TestRunner.TestLaunchers
             hasChildren = test.HasChildren;
             isSuite = test.IsSuite;
             childrenIds = test.Tests.Select(t => t.Id).ToArray();
-            Categories = test.GetAllCategoriesFromTest().ToArray();
             IsTestAssembly = test is TestAssembly;
             RunState = (RunState)Enum.Parse(typeof(RunState), test.RunState.ToString());
             Description = (string)test.Properties.Get(PropertyNames.Description);

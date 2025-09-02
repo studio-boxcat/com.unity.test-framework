@@ -20,19 +20,15 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         public int FailedCount { get { return m_FailedCount + m_InconclusiveCount; } }
         public int NotRunCount { get { return m_NotRunCount + m_SkippedCount; } }
 
-        [SerializeField]
+        [NonSerialized]
         public bool PassedHidden;
-        [SerializeField]
+        [NonSerialized]
         public bool FailedHidden;
-        [SerializeField]
+        [NonSerialized]
         public bool NotRunHidden;
 
         [SerializeField]
         public string m_SearchString;
-        [SerializeField]
-        private string[] selectedCategories = new string[0];
-
-        public string[] availableCategories = new string[0];
 
 
         private GUIContent m_SucceededBtn;
@@ -47,14 +43,8 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         {
             get
             {
-                return !string.IsNullOrEmpty(m_SearchString) || PassedHidden || FailedHidden || NotRunHidden ||
-                    (selectedCategories != null && selectedCategories.Length > 0);
+                return !string.IsNullOrEmpty(m_SearchString) || PassedHidden || FailedHidden || NotRunHidden;
             }
-        }
-
-        public string[] CategoryFilter
-        {
-            get { return selectedCategories; }
         }
 
         public void UpdateCounters(List<TestRunnerResult> resultList, Dictionary<string, TestTreeViewItem> filteredTree)
@@ -110,15 +100,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                     SearchStringCleared();
             }
 
-            if (availableCategories != null && availableCategories.Any())
-            {
-                TestRunnerGUI.CategorySelectionDropDown(BuildCategorySelectionProvider());
-            }
-            else
-            {
-                EditorGUILayout.Popup(0, new[] { "<No categories available>" }, EditorStyles.toolbarDropDown, GUILayout.MaxWidth(150));
-            }
-
             EditorGUI.BeginChangeCheck();
             if (m_SucceededBtn != null)
             {
@@ -148,18 +129,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             EditorGUILayout.EndHorizontal();
         }
 
-        private ISelectionDropDownContentProvider BuildCategorySelectionProvider()
-        {
-            var itemProvider = new MultiValueContentProvider<string>(availableCategories, selectedCategories,
-                categories =>
-                {
-                    selectedCategories = categories;
-                    UpdateTestTreeRoots();
-                });
-
-            return itemProvider;
-        }
-
         private static int GetMaxWidth(int count)
         {
             if (count < 10)
@@ -172,7 +141,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             PassedHidden = false;
             FailedHidden = false;
             NotRunHidden = false;
-            selectedCategories = new string[0];
             m_SearchString = "";
             if (SearchStringChanged != null)
             {

@@ -17,7 +17,6 @@ namespace UnityEngine.TestTools.TestRunner.GUI
 
         public string[] assemblyNames;
         public string[] groupNames;
-        public string[] categoryNames;
         public string[] testNames;
         public bool synchronousOnly;
 
@@ -28,7 +27,6 @@ namespace UnityEngine.TestTools.TestRunner.GUI
             AddFilters(filters, testNames, s => new FullNameFilter(s));
             AddFilters(filters, groupNames, OptimizedGroupFilter);
             AddFilters(filters, assemblyNames, s => new AssemblyNameFilter(s));
-            AddFilters(filters, categoryNames, s => new CategoryFilterExtended(s) {IsRegex = true});
 
             if (synchronousOnly)
             {

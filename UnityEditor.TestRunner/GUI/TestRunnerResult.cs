@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.TestTools.TestRunner.Api;
-using UnityEngine;
 
 namespace UnityEditor.TestTools.TestRunner.GUI
 {
@@ -22,8 +21,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         public bool ignoredOrSkipped;
         public string description;
         public bool isSuite;
-        public List<string> categories;
-        public string parentId;
         public string parentUniqueId;
 
         //This field is suppose to mark results from before domain reload
@@ -56,8 +53,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                 resultStatus = ResultStatus.Failed;
                 messages = test.SkipReason;
             }
-            categories = test.Categories.ToList();
-            parentId = test.ParentId;
             parentUniqueId = test.ParentUniqueName;
         }
 
@@ -169,7 +164,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         public string FullName { get { return fullName; } }
         public string ParentId { get { return parentUniqueId; } }
         public bool IsSuite { get { return isSuite; } }
-        public List<string> Categories { get { return categories; } }
 
         public void Clear()
         {

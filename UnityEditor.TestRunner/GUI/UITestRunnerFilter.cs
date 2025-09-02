@@ -12,7 +12,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 #pragma warning disable 649
         public string[] assemblyNames;
         public string[] groupNames;
-        public string[] categoryNames;
         public string[] testNames;
         public bool synchronousOnly;
 
@@ -22,20 +21,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             if (output != null && output.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                 return output.Substring(0, output.Length - 4);
             return output;
-        }
-
-        private bool CategoryMatches(IEnumerable<string> categories)
-        {
-            if (categoryNames == null || categoryNames.Length == 0)
-                return true;
-
-            foreach (string category in categories)
-            {
-                if (categoryNames.Contains(category))
-                    return true;
-            }
-
-            return false;
         }
 
         private bool IDMatchesAssembly(string id)
@@ -127,7 +112,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             foreach (var kvp in newResultList)
             {
                 var result = kvp.Value;
-                if (!result.IsSuite && CategoryMatches(result.Categories))
+                if (!result.IsSuite)
                 {
                     if (IDMatchesAssembly(result.Id) && NameMatches(result.FullName) &&
                         NameMatchesExactly(result.FullName, nameLookup))
@@ -145,7 +130,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             string FullName { get; }
             string ParentId { get; }
             bool IsSuite { get; }
-            List<string> Categories { get; }
             void Clear();
         }
     }

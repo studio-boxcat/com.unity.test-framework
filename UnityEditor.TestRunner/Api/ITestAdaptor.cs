@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using NUnit.Framework.Interfaces;
 
@@ -58,10 +57,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
         /// </summary>
         object[] Arguments { get; }
         /// <summary>
-        /// An array of the categories applied to the test or fixture.
-        /// </summary>
-        string[] Categories { get; }
-        /// <summary>
         /// Returns true if the node represents a test assembly, false otherwise.
         /// </summary>
         bool IsTestAssembly { get; }
@@ -77,10 +72,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
         /// The skip reason. E.g., if ignoring the test.
         /// </summary>
         string SkipReason { get; }
-        /// <summary>
-        /// The ID of the parent node.
-        /// </summary>
-        string ParentId { get; }
         /// <summary>
         /// The full name of the parent node.
         /// </summary>

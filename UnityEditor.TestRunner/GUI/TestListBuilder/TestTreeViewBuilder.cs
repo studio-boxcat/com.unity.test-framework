@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.TestTools.TestRunner.Api;
-using UnityEngine;
-using UnityEngine.TestRunner.NUnitExtensions.Filters;
 
 namespace UnityEditor.TestTools.TestRunner.GUI
 {
@@ -24,16 +21,8 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         private readonly Dictionary<string, List<TestRunnerResult>> m_ChildrenResults;
         private readonly bool m_runningOnPlatform;
 
-        private readonly List<string> m_AvailableCategories = new List<string>();
-
-        public string[] AvailableCategories
-        {
-            get { return m_AvailableCategories.Distinct().OrderBy(a => a).ToArray(); }
-        }
-
         public TestTreeViewBuilder(ITestAdaptor[] tests, Dictionary<string, TestRunnerResult> oldTestResultResults, TestRunnerUIFilter uiFilter, bool runningOnPlatform)
         {
-            m_AvailableCategories.Add(CategoryFilterExtended.k_DefaultCategory);
             m_OldTestResults = oldTestResultResults;
             m_ChildrenResults = new Dictionary<string, List<TestRunnerResult>>();
             m_TestListRoots = tests;
@@ -53,7 +42,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             return rootItem;
         }
 
-        private bool IsFilteredOutByUIFilter(ITestAdaptor test, TestRunnerResult result)
+        private bool IsFilteredOutByUIFilter(TestRunnerResult result)
         {
             if (m_UIFilter.PassedHidden && result.resultStatus == TestRunnerResult.ResultStatus.Passed)
                 return true;
@@ -63,8 +52,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                 return true;
             if (!string.IsNullOrEmpty(m_UIFilter.m_SearchString) && result.FullName.IndexOf(m_UIFilter.m_SearchString, StringComparison.InvariantCultureIgnoreCase) < 0)
                 return true;
-            if (m_UIFilter.CategoryFilter.Length > 0)
-                return !test.Categories.Any(category => m_UIFilter.CategoryFilter.Contains(category));
 
             return false;
         }
@@ -77,8 +64,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             }
 
             var testCount = new TestCount();
-
-            m_AvailableCategories.AddRange(testElement.Categories);
 
             var testElementId = testElement.UniqueName;
             if (!testElement.HasChildren)
@@ -105,7 +90,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                 results.Add(result);
 
                 var test = new TestTreeViewItem(testElement, depth, rootItem);
-                if (!IsFilteredOutByUIFilter(testElement, result))
+                if (!IsFilteredOutByUIFilter(result))
                 {
                     rootItem.AddChild(test);
                     if (!m_treeFiltered.ContainsKey(test.FullName))

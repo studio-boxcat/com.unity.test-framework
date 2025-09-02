@@ -1,40 +1,13 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
-using UnityEngine.TestRunner.NUnitExtensions.Filters;
 using UnityEngine.TestTools;
 
 namespace UnityEngine.TestRunner.NUnitExtensions
 {
     internal static class TestExtensions
     {
-        private static List<string> ExtractFixtureCategories(ITest test)
-        {
-            var fixtureCategories = test.Properties[PropertyNames.Category].Cast<string>().ToList();
-            if (test.Parent != null)
-            {
-                fixtureCategories.AddRange(ExtractFixtureCategories(test.Parent));
-            }
-
-            return fixtureCategories;
-        }
-
-        public static List<string> GetAllCategoriesFromTest(this ITest test)
-        {
-            // Only mark tests as Uncategorized if the test fixture doesn't have a category,
-            // otherwise the test inherits the Fixture category.
-            // Recursively try checking until Parent is null - cause category can be set on higher level.
-            var categories = ExtractFixtureCategories(test);
-            if (categories.Count == 0 && test is TestMethod)
-            {
-                categories.Add(CategoryFilterExtended.k_DefaultCategory);
-            }
-
-            return categories;
-        }
-
         public static void ParseForNameDuplicates(this ITest test)
         {
             var duplicates = new Dictionary<string, int>();

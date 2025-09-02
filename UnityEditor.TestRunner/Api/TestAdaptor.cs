@@ -39,7 +39,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
             TypeInfo = test.TypeInfo;
             Method = test.Method;
             Arguments = test is TestMethod testMethod ? testMethod.parms?.Arguments : (test as TestSuite)?.Arguments;
-            Categories = test.GetAllCategoriesFromTest().Distinct().ToArray();
             IsTestAssembly = test is TestAssembly;
             RunState = (RunState)Enum.Parse(typeof(RunState), test.RunState.ToString());
             Description = (string)test.Properties.Get(PropertyNames.Description);
@@ -78,7 +77,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
             IsSuite = test.isSuite;
             m_ChildrenIds = test.childrenIds;
             TestCaseTimeout = test.testCaseTimeout;
-            Categories = test.Categories;
             IsTestAssembly = test.IsTestAssembly;
             RunState = (RunState)Enum.Parse(typeof(RunState), test.RunState.ToString());
             Description = test.Description;
@@ -128,7 +126,6 @@ namespace UnityEditor.TestTools.TestRunner.Api
         public IMethodInfo Method { get; private set; }
         public object[] Arguments { get; }
         private string[] m_ChildrenIds;
-        public string[] Categories { get; private set; }
         public bool IsTestAssembly { get; private set; }
         public RunState RunState { get; }
         public string Description { get; }

@@ -15,8 +15,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         private static readonly GUIContent s_GUIRunAllTests = EditorGUIUtility.TrTextContent("Run All", "Run all tests");
         private static readonly GUIContent s_GUIRerunFailedTests = EditorGUIUtility.TrTextContent("Rerun Failed", "Rerun all failed tests");
         private static readonly GUIContent s_GUIRun = EditorGUIUtility.TrTextContent("Run");
-        private static readonly GUIContent s_GUIRunUntilFailed = EditorGUIUtility.TrTextContent("Run Until Failed");
-        private static readonly GUIContent s_GUIRun100Times = EditorGUIUtility.TrTextContent("Run 100 times");
         private static readonly GUIContent s_GUIOpenTest = EditorGUIUtility.TrTextContent("Open source code");
         private static readonly GUIContent s_GUIOpenErrorLine = EditorGUIUtility.TrTextContent("Open error line");
         private static readonly GUIContent s_GUIClearResults = EditorGUIUtility.TrTextContent("Clear Results", "Clear all test results");
@@ -37,7 +35,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         [NonSerialized] 
         internal bool m_buildOnly;
 
-        [SerializeField]
+        [NonSerialized]
         private TestRunProgress runProgress;
         public Dictionary<string, TestTreeViewItem> filteredTree { get; set; }
 
@@ -51,7 +49,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             }
         }
 
-        [SerializeField]
+        [NonSerialized]
         private List<TestRunnerResult> m_NewResultList = new List<TestRunnerResult>();
 
         private Dictionary<string, TestRunnerResult> m_ResultByKey;
@@ -77,9 +75,9 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             }
         }
 
-        [SerializeField]
+        [NonSerialized]
         private string m_ResultText;
-        [SerializeField]
+        [NonSerialized]
         private string m_ResultStacktrace;
 
         private TreeViewController m_TestListTree;
@@ -550,7 +548,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             {
                 testMode = m_TestMode,
                 assemblyNames = filter.assemblyNames,
-                categoryNames = filter.categoryNames,
                 groupNames = filter.groupNames,
                 testNames = filter.testNames,
             }).ToArray();
