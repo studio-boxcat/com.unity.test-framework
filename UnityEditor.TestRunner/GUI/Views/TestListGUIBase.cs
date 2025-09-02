@@ -114,9 +114,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             public bool filterSelectedTestsOnly;
         }
         
-        [SerializeField]
-        private int m_SelectedOption;
-
         public void PrintHeadPanel()
         {
             if (m_RunOnPlatform)
