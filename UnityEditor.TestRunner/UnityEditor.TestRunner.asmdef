@@ -1,6 +1,7 @@
 {
     "name": "UnityEditor.TestRunner",
     "references": [
+        "Unity.Analytics",
         "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
