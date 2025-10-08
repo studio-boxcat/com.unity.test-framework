@@ -1,4 +1,4 @@
-using System;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -15,3 +15,9 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Unity.PackageManagerUI.Editor")]
 
 [assembly: AssemblyVersion("1.0.0")]
+
+namespace System.Runtime.CompilerServices
+{
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class IsExternalInit { }
+}

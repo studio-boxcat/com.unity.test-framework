@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework.Interfaces;
+using UnityEditor.TestTools.TestRunner;
 using UnityEditor.TestTools.TestRunner.GUI;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ namespace UnityEditor.TestRunner.TestLaunchers
             ProjectPath,
         }
 
-        public static void TryCreateFile(ITest runnerLoadedTest, BuildPlayerOptions playerBuildOptions)
+        public static void TryCreateFile(ITest runnerLoadedTest, PlayerLauncherBuildOptions playerBuildOptions)
         {
             try
             {
@@ -76,16 +77,18 @@ namespace UnityEditor.TestRunner.TestLaunchers
             }
         }
 
-        private static string GetMetaDestinationPath(BuildPlayerOptions playerBuildOptions)
+        private static string GetMetaDestinationPath(PlayerLauncherBuildOptions playerBuildOptions)
         {
             // If we are Auto-Running the player, use project path instead of player build path because it will be wiped out after successful run.
-            if ((playerBuildOptions.options & BuildOptions.AutoRunPlayer) != 0)
+            if ((playerBuildOptions.GetCurrentBuildOptions() & BuildOptions.AutoRunPlayer) != 0)
             {
                 return Path.Combine(GetPathFromArgs(PathType.ProjectPath));
             }
 
             // if the buildOutputPath is for a file, then get the directory of it
-            return File.Exists(playerBuildOptions.locationPathName) ? Path.GetDirectoryName(playerBuildOptions.locationPathName) : playerBuildOptions.locationPathName;
+            return File.Exists(playerBuildOptions.GetCurrentLocationPath())
+                ? Path.GetDirectoryName(playerBuildOptions.GetCurrentLocationPath())
+                : playerBuildOptions.GetCurrentLocationPath();
         }
 
         private static void RecursivelyPopulateFileReferences(ITest test, Dictionary<string, FileReference> testFilePaths, string repositoryPath, IGuiHelper guiHelper)

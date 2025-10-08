@@ -41,10 +41,7 @@ namespace UnityEditor.TestTools.TestRunner
             m_Runner = runner;
         }
 
-        protected override RuntimePlatform? TestTargetPlatform
-        {
-            get { return BuildTargetConverter.TryConvertToRuntimePlatform(m_TargetPlatform); }
-        }
+        protected override RuntimePlatform TestTargetPlatform => BuildTargetConverter.TryConvertToRuntimePlatform(m_TargetPlatform);
 
         public override void Run()
         {
@@ -61,7 +58,7 @@ namespace UnityEditor.TestTools.TestRunner
 
                 var filter = m_Settings.BuildNUnitFilter();
                 var runner = LoadTests(filter);
-                var exceptionThrown = ExecutePreBuildSetupMethods(runner.LoadedTest, filter);
+                var exceptionThrown = ExecutePrebuildSetupWithTestDataMethods(runner.LoadedTest, filter) || ExecutePreBuildSetupMethods(runner.LoadedTest, filter);
                 if (exceptionThrown)
                 {
                     ReopenOriginalScene(m_Settings.originalScene);
@@ -73,10 +70,9 @@ namespace UnityEditor.TestTools.TestRunner
                 EditorSceneManager.SaveScene(m_Scene);
 
                 playerBuildOptions = GetBuildOptions();
+                bool success = BuildAndRunFromLauncherOptions(playerBuildOptions);
 
-                var success = BuildAndRunPlayer(playerBuildOptions);
-
-                FilePathMetaInfo.TryCreateFile(runner.LoadedTest, playerBuildOptions.BuildPlayerOptions);
+                FilePathMetaInfo.TryCreateFile(runner.LoadedTest, playerBuildOptions);
                 ExecutePostBuildCleanupMethods(runner.LoadedTest, filter);
 
                 ReopenOriginalScene(m_Settings.originalScene);
@@ -88,7 +84,7 @@ namespace UnityEditor.TestTools.TestRunner
                     throw new TestLaunchFailedException("Player build failed");
                 }
 
-                if ((playerBuildOptions.BuildPlayerOptions.options & BuildOptions.AutoRunPlayer) != 0)
+                if ((playerBuildOptions.GetCurrentBuildOptions() & BuildOptions.AutoRunPlayer) != 0)
                 {
                     editorConnectionTestCollector.PostSuccessfulBuildAction();
                 }
@@ -113,7 +109,34 @@ namespace UnityEditor.TestTools.TestRunner
             runner.AddEventHandlerScriptableObject<TestRunCallbackListener>();
         }
 
-        private static bool BuildAndRunPlayer(PlayerLauncherBuildOptions buildOptions)
+        private bool BuildAndRunFromLauncherOptions(PlayerLauncherBuildOptions playerBuildOptions)
+        {
+            bool success = false;
+
+#if UNITY_6000_1_OR_NEWER
+            if (playerBuildOptions.ShouldBuildWithProfile())
+            {
+                playerBuildOptions.OnBeforeBuildProfileBuild(m_Scene.path);
+                Debug.LogFormat(
+                    LogType.Log, LogOption.NoStacktrace, null,
+                    "Building player with build profile options:\n{0}", playerBuildOptions);
+                success = BuildAndRunPlayer(playerBuildOptions.BuildPlayerWithProfileOptions);
+                playerBuildOptions.OnAfterBuildProfileBuild();
+
+            }
+            else
+#endif
+            {
+                Debug.LogFormat(
+                    LogType.Log, LogOption.NoStacktrace, null,
+                    "Building player with following options:\n{0}", playerBuildOptions);
+                success = BuildAndRunPlayer(playerBuildOptions.BuildPlayerOptions);
+            }
+
+            return success;
+        }
+
+        private static bool BuildAndRunPlayer(BuildPlayerOptions buildOptions)
         {
             Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Building player with following options:\n{0}", buildOptions);
 
@@ -135,19 +158,19 @@ namespace UnityEditor.TestTools.TestRunner
 
 #if UNITY_2023_2_OR_NEWER
             // WebGL has to be in close on quit mode to ensure that the browser tab is closed when the player finishes running tests
-            if (buildOptions.BuildPlayerOptions.target == BuildTarget.WebGL)
+            if (buildOptions.target == BuildTarget.WebGL)
             {
                 PlayerSettings.WebGL.closeOnQuit = true;
             }
 #endif
 
-            var result = BuildPipeline.BuildPlayer(buildOptions.BuildPlayerOptions);
+            var result = BuildPipeline.BuildPlayer(buildOptions);
             if (result.summary.result != BuildResult.Succeeded)
                 Debug.LogError(result.SummarizeErrors());
 
 #if UNITY_2023_2_OR_NEWER
             // Clean up WebGL close on quit mode
-            if (buildOptions.BuildPlayerOptions.target == BuildTarget.WebGL)
+            if (buildOptions.target == BuildTarget.WebGL)
             {
                 PlayerSettings.WebGL.closeOnQuit = false;
             }
@@ -155,6 +178,39 @@ namespace UnityEditor.TestTools.TestRunner
 
             return result.summary.result == BuildResult.Succeeded;
         }
+
+#if UNITY_6000_1_OR_NEWER
+        private static bool BuildAndRunPlayer(BuildPlayerWithProfileOptions buildOptions)
+        {
+            if (buildOptions.buildProfile == null)
+            {
+                throw new TestLaunchFailedException("Player build failed, profile was null but BuildPlayerWithProfileOptions was used.");
+            }
+
+            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Building player with profile options:\n{0}", buildOptions);
+            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Building with profile at path:\n{0}",
+                AssetDatabase.GetAssetPath(buildOptions.buildProfile));
+
+            // WebGL has to be in close on quit mode to ensure that the browser tab is closed when the player finishes running tests
+            if (buildOptions.buildProfile.buildTarget == BuildTarget.WebGL)
+            {
+                PlayerSettings.WebGL.closeOnQuit = true;
+            }
+
+            var result = BuildPipeline.BuildPlayer(buildOptions);
+            if (result.summary.result != BuildResult.Succeeded)
+                Debug.LogError(result.SummarizeErrors());
+
+            // Clean up WebGL close on quit mode
+            if (buildOptions.buildProfile.buildTarget == BuildTarget.WebGL)
+            {
+                PlayerSettings.WebGL.closeOnQuit = false;
+            }
+
+            return result.summary.result == BuildResult.Succeeded;
+        }
+#endif
+
 
         internal PlayerLauncherBuildOptions GetBuildOptions()
         {
@@ -218,6 +274,9 @@ namespace UnityEditor.TestTools.TestRunner
 #if !UNITY_2021_1_OR_NEWER
                 || (m_TargetPlatform == BuildTarget.XboxOne)
 #endif
+#if UNITY_2020_3_OR_NEWER
+                || (m_TargetPlatform == BuildTarget.GameCoreXboxSeries) || (m_TargetPlatform == BuildTarget.GameCoreXboxOne)
+#endif
                 )
                 {
                     reduceBuildLocationPathLength = true;
@@ -248,6 +307,11 @@ namespace UnityEditor.TestTools.TestRunner
                         PostprocessBuildPlayer.GetExtensionForBuildTarget(buildTargetGroup, buildOptions.target,
                             buildOptions.options);
                     var playerExecutableName = "PlayerWithTests";
+
+                    if (m_TargetPlatform == BuildTarget.GameCoreXboxSeries ||
+                        m_TargetPlatform == BuildTarget.GameCoreXboxOne)
+                        PlayerSettings.productName = playerExecutableName;
+
                     if (!string.IsNullOrEmpty(extensionForBuildTarget))
                         playerExecutableName += $".{extensionForBuildTarget}";
 
@@ -255,15 +319,26 @@ namespace UnityEditor.TestTools.TestRunner
                 }
             }
 
-            return new PlayerLauncherBuildOptions
+            var result = new PlayerLauncherBuildOptions
             {
-                BuildPlayerOptions = ModifyBuildOptions(buildOptions),
+                BuildPlayerOptions = buildOptions,
                 PlayerDirectory = buildLocation,
             };
-        */
+
+#if UNITY_6000_1_OR_NEWER
+            BuildPlayerWithProfileOptions options = new BuildPlayerWithProfileOptions();
+            options.locationPathName = buildOptions.locationPathName;
+            options.assetBundleManifestPath = buildOptions.assetBundleManifestPath;
+            options.options = buildOptions.options;
+            options.buildProfile = null;
+            result.BuildPlayerWithProfileOptions = options;
+#endif
+
+            return ModifyBuildOptions(result);
+            */
         }
 
-        private BuildPlayerOptions ModifyBuildOptions(BuildPlayerOptions buildOptions)
+        private PlayerLauncherBuildOptions ModifyBuildOptions(PlayerLauncherBuildOptions playerOptions)
         {
             var allAssemblies = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(x => x.GetReferencedAssemblies().Any(z => z.Name == "UnityEditor.TestRunner")).ToArray();
@@ -272,10 +347,13 @@ namespace UnityEditor.TestTools.TestRunner
 
             foreach (var modifier in modifiers)
             {
-                buildOptions = modifier.ModifyOptions(buildOptions);
+                playerOptions.BuildPlayerOptions = modifier.ModifyOptions(playerOptions.BuildPlayerOptions);
+#if UNITY_6000_1_OR_NEWER
+                playerOptions.BuildPlayerWithProfileOptions = modifier.ModifyOptions(playerOptions.BuildPlayerWithProfileOptions);
+#endif
             }
 
-            return buildOptions;
+            return playerOptions;
         }
 
         private static bool ShouldReduceBuildLocationPathLength(BuildTarget target)

@@ -7,7 +7,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks.Platform
     {
         public override IEnumerator Execute(TestJobData testJobData)
         {
-            if ((testJobData.PlayerBuildOptions.options & BuildOptions.AutoRunPlayer) != 0)
+            if ((testJobData.GetCurrentBuildOptions() & BuildOptions.AutoRunPlayer) != 0)
             {
                 testJobData.PlatformSpecificSetup.PostSuccessfulLaunchAction();
             }

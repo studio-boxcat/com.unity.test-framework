@@ -9,6 +9,7 @@ using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using NUnit.Framework.Internal.Commands;
 using NUnit.Framework.Internal.Execution;
+using UnityEngine.TestTools;
 using UnityEngine.TestTools.Logging;
 
 namespace UnityEngine.TestRunner.NUnitExtensions.Runner
@@ -18,6 +19,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
         private readonly TestSuite _suite;
         private readonly TestSuiteResult _suiteResult;
         private readonly ITestFilter _childFilter;
+        private EnumerableOneTimeSetUpTearDownCommand _unityOneTimeSetupTearDownCommand;
         private TestCommand _setupCommand;
         private TestCommand _teardownCommand;
 
@@ -65,6 +67,10 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
                                     //This is needed to give the editor a chance to go out of playmode if needed before creating objects.
                                     //If we do not, the objects could be automatically destroyed when exiting playmode and could result in errors later on
                                     yield return null;
+
+                                    foreach (var child in _unityOneTimeSetupTearDownCommand.ExecuteOneTimeSetUpEnumerable(Context))
+                                        yield return child;
+
                                     PerformOneTimeSetUp();
                                 }
 
@@ -94,6 +100,9 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
                                 if (Context.ExecutionStatus != TestExecutionStatus.AbortRequested && !m_DontRunRestoringResult)
                                 {
                                     PerformOneTimeTearDown();
+
+                                    foreach (var child in _unityOneTimeSetupTearDownCommand.ExecuteOneTimeTeardownEnumerable(Context))
+                                        yield return child;
                                 }
                             }
                             break;
@@ -151,6 +160,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
 
             _setupCommand = CommandBuilder.MakeOneTimeSetUpCommand(_suite, setUpTearDownItems, actionItems);
             _teardownCommand = CommandBuilder.MakeOneTimeTearDownCommand(_suite, setUpTearDownItems, actionItems);
+            _unityOneTimeSetupTearDownCommand = new EnumerableOneTimeSetUpTearDownCommand(_suite);
         }
 
         private void PerformOneTimeSetUp()
@@ -290,7 +300,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
                 }
             }
         }
-        
+
         private static bool ShouldExecuteEvents(Test test)
         {
             return UnityWorkItemDataHolder.alreadyExecutedTests == null || UnityWorkItemDataHolder.alreadyExecutedTests.All(x => x != test.GetUniqueName());
@@ -309,7 +319,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
                 if (ex is NUnitException || ex is TargetInvocationException)
                     ex = ex.InnerException;
 
-                Result.RecordException(ex, FailureSite.SetUp);
+                Result.RecordException(ex, FailureSite.TearDown);
             }
 
             logScope.Dispose();
@@ -358,6 +368,17 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
                 if (child.State == WorkItemState.Running)
                     child.Cancel(force);
             }
+        }
+
+        protected override void WorkItemComplete()
+        {
+            if (ShouldRestore(_suite))
+            {
+                return;
+            }
+            base.WorkItemComplete();
+
+            Context.OneTimeSetUpTearDownState.Reset();
         }
     }
 }

@@ -16,6 +16,8 @@ namespace UnityEditor.TestTools.TestRunner
         private XboxOnePlatformSetup m_XboxOnePlatformSetup = new XboxOnePlatformSetup();
 #endif
         [SerializeField]
+        private GameCorePlatformSetup m_GameCorePlatformSetup = new GameCorePlatformSetup();
+        [SerializeField]
         private AndroidPlatformSetup m_AndroidPlatformSetup = new AndroidPlatformSetup();
         [SerializeField]
         private SwitchPlatformSetup m_SwitchPlatformSetup = new SwitchPlatformSetup();
@@ -104,6 +106,8 @@ namespace UnityEditor.TestTools.TestRunner
 #if !UNITY_2021_1_OR_NEWER
                 {BuildTarget.XboxOne, m_XboxOnePlatformSetup},
 #endif
+                {BuildTarget.GameCoreXboxOne, m_GameCorePlatformSetup},
+                {BuildTarget.GameCoreXboxSeries, m_GameCorePlatformSetup},
                 {BuildTarget.Android, m_AndroidPlatformSetup},
                 {BuildTarget.Switch, m_SwitchPlatformSetup}
             };

@@ -13,5 +13,17 @@ namespace UnityEditor.TestTools
         /// <param name="playerOptions">The unmodified BuildPlayerOptions.</param>
         /// <returns>The modified BuildPlayerOptions.</returns>
         BuildPlayerOptions ModifyOptions(BuildPlayerOptions playerOptions);
+
+#if UNITY_6000_1_OR_NEWER
+        /// <summary>
+        /// A callback to modify the <see cref="BuildPlayerWithProfileOptions"/> when building a player for test run. When called a
+        /// <see cref="UnityEditor.Build.Profile.BuildProfile"/> should be specified. Build pipeline will use the <see cref="BuildPlayerWithProfileOptions"/>
+        /// instead of <see cref="BuildPlayerOptions"/> when a build profile is given.
+        /// </summary>
+        /// <param name="playerOptions">The unmodified BuildPlayerWithProfileOptions, does not specify a build profile.</param>
+        /// <returns>The modified BuildPlayerWithProfileOptions. If a build profile is given, then <see cref="BuildPlayerWithProfileOptions"> is
+        /// used to build the player.</returns>
+        BuildPlayerWithProfileOptions ModifyOptions(BuildPlayerWithProfileOptions playerOptions) { return playerOptions; }
+#endif
     }
 }

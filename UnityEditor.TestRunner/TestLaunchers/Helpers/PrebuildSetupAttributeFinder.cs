@@ -1,4 +1,3 @@
-using System;
 using UnityEngine.TestTools;
 
 namespace UnityEditor.TestTools.TestRunner

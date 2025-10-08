@@ -65,6 +65,7 @@ namespace UnityEngine.TestTools.NUnitExtensions
         {
             var productName = string.Join("_", m_ProductName.Split(Path.GetInvalidFileNameChars()));
             var suite = new TestSuite(productName);
+            var lastYieldTime = Time.realtimeSinceStartup;
             for (var index = 0; index < assemblies.Length; index++)
             {
                 var assembly = assemblies[index];
@@ -90,7 +91,11 @@ namespace UnityEngine.TestTools.NUnitExtensions
                     }
                 }
 
-                yield return null;
+                if (Time.realtimeSinceStartup > lastYieldTime + 0.1f)
+                {
+                    yield return null;
+                    lastYieldTime = Time.realtimeSinceStartup;
+                }
             }
 
             suite.ParseForNameDuplicates();

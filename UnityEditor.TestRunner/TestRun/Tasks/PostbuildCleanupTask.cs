@@ -1,6 +1,3 @@
-using System;
-using NUnit.Framework.Interfaces;
-using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
@@ -12,7 +9,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
             RunOnError = ErrorRunMode.RunAlways;
         }
 
-        protected override void Action(IPostBuildCleanup target)
+        protected override void Action(IPostBuildCleanup target, TestJobData testJobData)
         {
             target.Cleanup();
         }

@@ -46,6 +46,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 
             if (ignoredOrSkipped)
             {
+                resultStatus = ResultStatus.Skipped;
                 messages = test.SkipReason;
             }
             if (notRunnable)
@@ -87,7 +88,17 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             }
             if (childrenResult.Any(x => x.resultStatus == ResultStatus.Inconclusive)) resultStatus = ResultStatus.Inconclusive;
             if (childrenResult.Any(x => x.resultStatus == ResultStatus.Failed)) resultStatus = ResultStatus.Failed;
+            if (childrenResult.Any(x => x.resultStatus == ResultStatus.NotRun)) resultStatus = ResultStatus.NotRun;
             UpdateParentResult(results);
+        }
+
+        public void CalculateAndSetParentDuration(string parentId, IDictionary<string, List<TestRunnerResult>> results)
+        {
+            if (results == null) return;
+            results.TryGetValue(parentId , out var childrenResult);
+            if (childrenResult == null) return;
+            var totalDuration = childrenResult.Sum(x => x.duration);
+            duration = (float)totalDuration;
         }
 
         private void UpdateParentResult(IDictionary<string, List<TestRunnerResult>> results)
@@ -117,7 +128,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             notRunnable = result.notRunnable;
             description = result.description;
             notOutdated = result.notOutdated;
-            if (m_OnResultUpdate != null && !result.isSuite)
+            if (m_OnResultUpdate != null)
             {
                 m_OnResultUpdate(this);
             }

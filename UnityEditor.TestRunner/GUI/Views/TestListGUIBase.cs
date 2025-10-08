@@ -5,6 +5,22 @@ using System.Linq;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
+using TreeView = UnityEditor.IMGUI.Controls.TreeView<int>;
+using TreeViewController = UnityEditor.IMGUI.Controls.TreeViewController<int>;
+using TreeViewItem = UnityEditor.IMGUI.Controls.TreeViewItem<int>;
+using LazyTreeViewDataSource = UnityEditor.IMGUI.Controls.LazyTreeViewDataSource<int>;
+using TreeViewUtility = UnityEditor.IMGUI.Controls.TreeViewUtility<int>;
+using TreeViewSelectState = UnityEditor.IMGUI.Controls.TreeViewSelectState<int>;
+using ITreeViewGUI = UnityEditor.IMGUI.Controls.ITreeViewGUI<int>;
+using ITreeViewDragging = UnityEditor.IMGUI.Controls.ITreeViewDragging<int>;
+using ITreeViewDataSource = UnityEditor.IMGUI.Controls.ITreeViewDataSource<int>;
+using TreeViewGUI = UnityEditor.IMGUI.Controls.TreeViewGUI<int>;
+using TreeViewDragging = UnityEditor.IMGUI.Controls.TreeViewDragging<int>;
+using TreeViewDataSource = UnityEditor.IMGUI.Controls.TreeViewDataSource<int>;
+using TreeViewItemAlphaNumericSort = UnityEditor.IMGUI.Controls.TreeViewItemAlphaNumericSort<int>;
+using TreeViewState = UnityEditor.IMGUI.Controls.TreeViewState<int>;
+using RenameOverlay = UnityEditor.RenameOverlay<int>;
+
 
 namespace UnityEditor.TestTools.TestRunner.GUI
 {
@@ -32,7 +48,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         [NonSerialized]
         internal bool m_RunOnPlatform;
 
-        [NonSerialized] 
+        [NonSerialized]
         internal bool m_buildOnly;
 
         [NonSerialized]
@@ -102,18 +118,19 @@ namespace UnityEditor.TestTools.TestRunner.GUI
         private void UpdateProgressStatus(TestRunProgress progress)
         {
             runProgress = progress;
+            TestRunnerWindow.s_Instance.Repaint();
         }
 
         private IMonoCecilHelper MonoCecilHelper { get; set; }
         private IAssetsDatabaseHelper AssetsDatabaseHelper { get; set; }
         private IGuiHelper GuiHelper { get; set; }
-        
+
         private struct PlayerMenuItem
         {
             public GUIContent name;
             public bool filterSelectedTestsOnly;
         }
-        
+
         public void PrintHeadPanel()
         {
             if (m_RunOnPlatform)
@@ -121,6 +138,13 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                 EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
                 GUILayout.Label("Running on " + EditorUserBuildSettings.activeBuildTarget);
                 EditorGUILayout.EndHorizontal();
+            }
+            else if (m_TestMode == TestMode.PlayMode)
+            {
+                // Note, the following empty vertical area is inserted to give a different imgui id to the search bar.
+                // Otherwise imgui will threat the EditMode and PlayMode search bar as the same input.
+                EditorGUILayout.BeginVertical();
+                EditorGUILayout.EndVertical();
             }
 
             using (new EditorGUI.DisabledScope(m_TestListTree == null || IsBusy()))
@@ -132,7 +156,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 
         public void PrintProgressBar(Rect rect)
         {
-            if (runProgress == null || runProgress.HasFinished || string.IsNullOrEmpty(runProgress.RunGuid))
+            if (runProgress == null || runProgress.HasFinished || string.IsNullOrEmpty(runProgress.RunGuid) || !TestRunnerApi.IsRunning(runProgress.RunGuid))
             {
                 return;
             }
@@ -144,7 +168,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             {
                 TestRunnerApi.CancelTestRun(runProgress.RunGuid);
             }
-            
+
             EditorGUILayout.EndHorizontal();
         }
 
@@ -216,7 +240,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                             // Note: We select here m_buildOnly = false, so build location dialog won't show up
                             //       The player won't actually be ran when using together with EditorUserBuildSettings.installInBuildFolder
                             m_buildOnly = false;
-                            
+
                             menuItems = new []
                             {
                                 new PlayerMenuItem()
@@ -232,7 +256,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                         else
                         {
                             m_buildOnly = true;
-                            
+
                             menuItems = new []
                             {
                                 new PlayerMenuItem()
@@ -245,18 +269,18 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                                 },
                             };
                         }
-                        
+
                         if (GUILayout.Button(GUIContent.none, EditorStyles.toolbarDropDown))
                         {
                             Vector2 mousePos = Event.current.mousePosition;
-                            
+
                             EditorUtility.DisplayCustomMenu(new Rect(mousePos.x, mousePos.y, 0, 0),
                                 menuItems.Select(m => m.name).ToArray(),
                                 -1,
                                 (object userData, string[] options, int selected) => RunTests(menuItems[selected].filterSelectedTestsOnly ? RunFilterType.BuildSelected : RunFilterType.BuildAll), menuItems);
                         }
                     }
-                    
+
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -557,7 +581,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             var executionSettings =
                 CreateExecutionSettings(m_RunOnPlatform ? EditorUserBuildSettings.activeBuildTarget : (BuildTarget?)null,
                     testFilters);
-#endif     
+#endif
             if (runFilter == RunFilterType.BuildAll || runFilter == RunFilterType.BuildSelected)
             {
                 var runSettings = new PlayerLauncherTestRunSettings();
@@ -574,10 +598,10 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                 }
 
                 executionSettings.overloadTestRunSettings = runSettings;
-                
+
                 Debug.Log(executionSettings.ToString());
             }
-            
+
             if (m_TestRunnerApi == null)
             {
                 m_TestRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
@@ -664,6 +688,20 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                 return new[] {new UITestRunnerFilter()};
             }
 
+            if (runFilter == RunFilterType.RunFailed)
+            {
+                return new[]
+                {
+                    new UITestRunnerFilter()
+                    {
+                        testNames = ResultsByKey
+                            .Where(resultPair => !resultPair.Value.isSuite && resultPair.Value.resultStatus == TestRunnerResult.ResultStatus.Failed)
+                            .Select(resultPair => resultPair.Value.FullName)
+                            .ToArray()
+                    }
+                };
+            }
+
             var includedIds = GetIdsIncludedInRunFilter(runFilter, specificTests);
             var testsInFilter = includedIds.Select(id => m_TestListTree.FindItem(id)).Cast<TestTreeViewItem>()
                 .SelectMany(item => item.GetMinimizedSelectedTree()).Distinct().ToArray();
@@ -697,7 +735,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
                     testNames = tests.Select(test => test.FullName).ToArray()
                 });
             }
-            
+
             if (assemblies.Length > 0)
             {
                 filters.Add(new UITestRunnerFilter
@@ -783,7 +821,7 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             return CreateExecutionSettings(m_RunOnPlatform ? EditorUserBuildSettings.activeBuildTarget : null, filter);
 #else
             return CreateExecutionSettings(m_RunOnPlatform ? EditorUserBuildSettings.activeBuildTarget : (BuildTarget?)null, filter);
-#endif            
+#endif
         }
 
         private static ExecutionSettings CreateExecutionSettings(BuildTarget? buildTarget, params Filter[] filters)

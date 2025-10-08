@@ -1,5 +1,3 @@
-using System;
-
 namespace UnityEngine.TestTools
 {
     /// <summary>
@@ -8,7 +6,7 @@ namespace UnityEngine.TestTools
     public interface IPostBuildCleanup
     {
         /// <summary>
-        /// Implement this method to specify actions that should run as a post-build cleanup step.
+        /// The code that will run as a post-build cleanup step.
         /// </summary>
         void Cleanup();
     }

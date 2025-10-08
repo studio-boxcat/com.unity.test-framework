@@ -16,7 +16,7 @@ namespace UnityEngine.TestTools
         {
             if (Test.TypeInfo.Type != null)
             {
-                BeforeActions = GetTestActions(m_TestActionsCache, Test.Method.MethodInfo);
+                BeforeActions = GetTestActions(m_TestActionsCache, Test);
                 AfterActions = BeforeActions;
             }
         }

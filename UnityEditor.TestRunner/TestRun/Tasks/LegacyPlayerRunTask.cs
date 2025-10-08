@@ -26,6 +26,10 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
             launcher.Run();
             testJobData.PlayerBuildOptions = launcher.playerBuildOptions.BuildPlayerOptions; // This can be removed once the player build options are created in a separate task
 
+#if UNITY_6000_1_OR_NEWER
+            testJobData.PlayerBuildOptionsWithProfile = launcher.playerBuildOptions.BuildPlayerWithProfileOptions;
+#endif
+
             yield return null;
         }
     }

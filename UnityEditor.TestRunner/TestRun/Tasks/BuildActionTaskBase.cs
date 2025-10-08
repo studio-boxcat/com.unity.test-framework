@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework.Interfaces;
 using UnityEngine;
 using UnityEngine.TestTools.Logging;
 
@@ -21,7 +20,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
             typeName = typeof(T).Name;
         }
 
-        protected abstract void Action(T target);
+        protected abstract void Action(T target, TestJobData testJobData);
 
         public override IEnumerator Execute(TestJobData testJobData)
         {
@@ -30,7 +29,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
                 throw new Exception($"Test tree is not available for {GetType().Name}.");
             }
 
-            var enumerator = ExecuteMethods(testJobData.testTree, testJobData.testFilter, testJobData.TargetRuntimePlatform ?? Application.platform);
+            var enumerator = ExecuteMethods(testJobData);
 
             while (enumerator.MoveNext())
             {
@@ -38,21 +37,20 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
             }
         }
 
-        private IEnumerator ExecuteMethods(ITest testTree, ITestFilter testRunnerFilter, RuntimePlatform targetPlatform)
+        private IEnumerator ExecuteMethods(TestJobData testJobData)
         {
             var exceptions = new List<Exception>();
 
-            foreach (var targetClassType in attributeFinder.Search(testTree, testRunnerFilter, targetPlatform))
+            foreach (var targetClassType in attributeFinder.Search(testJobData.testTree, testJobData.testFilter, testJobData.TargetRuntimePlatform))
             {
                 try
                 {
-                    var targetClass = (T)createInstance(targetClassType);
-
                     logAction($"Executing {typeName} for: {targetClassType.FullName}.");
+                    var targetClass = (T)createInstance(targetClassType);
 
                     using (var logScope = logScopeProvider())
                     {
-                        Action(targetClass);
+                        Action(targetClass, testJobData);
                         logScope.EvaluateLogScope(true);
                     }
                 }
