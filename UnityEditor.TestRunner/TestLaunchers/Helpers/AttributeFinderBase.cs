@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework.Interfaces;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 namespace UnityEditor.TestTools.TestRunner
 {
@@ -28,60 +27,13 @@ namespace UnityEditor.TestTools.TestRunner
         public override IEnumerable<Type> Search(ITest tests, ITestFilter filter, RuntimePlatform testTargetPlatform)
         {
             var selectedTests = new List<ITest>();
-            GetMatchingTests(tests, filter, ref selectedTests, testTargetPlatform);
+            TestFiltering.GetMatchingTests(tests, filter, ref selectedTests, testTargetPlatform);
 
             var result = new List<Type>();
             result.AddRange(GetTypesFromPrebuildAttributes(selectedTests));
             result.AddRange(GetTypesFromInterface(selectedTests, testTargetPlatform));
 
             return result.Distinct();
-        }
-
-        private static void GetMatchingTests(ITest tests, ITestFilter filter, ref List<ITest> resultList, RuntimePlatform testTargetPlatform)
-        {
-            foreach (var test in tests.Tests)
-            {
-                if (IsTestEnabledOnPlatform(test, testTargetPlatform))
-                {
-                    if (test.IsSuite)
-                    {
-                        GetMatchingTests(test, filter, ref resultList, testTargetPlatform);
-                    }
-                    else
-                    {
-                        if (filter.Pass(test))
-                            resultList.Add(test);
-                    }
-                }
-            }
-        }
-
-        private static bool IsTestEnabledOnPlatform(ITest test, RuntimePlatform testTargetPlatform)
-        {
-            if (test.Method == null)
-            {
-                return true;
-            }
-
-            var attributesFromMethods = test.Method.GetCustomAttributes<UnityPlatformAttribute>(true);
-            var attributesFromTypes = test.Method.TypeInfo.GetCustomAttributes<UnityPlatformAttribute>(true);
-
-            if (attributesFromMethods.Length == 0 && attributesFromTypes.Length == 0)
-            {
-                return true;
-            }
-
-            if (!attributesFromMethods.All(a => a.IsPlatformSupported(testTargetPlatform)))
-            {
-                return false;
-            }
-
-            if (!attributesFromTypes.All(a => a.IsPlatformSupported(testTargetPlatform)))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private IEnumerable<Type> GetTypesFromPrebuildAttributes(IEnumerable<ITest> tests)
@@ -102,7 +54,7 @@ namespace UnityEditor.TestTools.TestRunner
 
         private static IEnumerable<Type> GetTypesFromInterface(IEnumerable<ITest> selectedTests, RuntimePlatform testTargetPlatform)
         {
-            var typesWithInterfaces = selectedTests.Where(t => typeof(T1).IsAssignableFrom(t.Method.TypeInfo.Type) && IsTestEnabledOnPlatform(t, testTargetPlatform));
+            var typesWithInterfaces = selectedTests.Where(t => typeof(T1).IsAssignableFrom(t.Method.TypeInfo.Type) && TestFiltering.IsTestEnabledOnPlatform(t, testTargetPlatform));
             return typesWithInterfaces.Select(t => t.Method.TypeInfo.Type);
         }
     }

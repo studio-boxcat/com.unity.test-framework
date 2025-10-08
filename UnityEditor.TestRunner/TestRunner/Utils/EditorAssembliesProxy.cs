@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.TestTools.Utils;
 
@@ -8,7 +9,15 @@ namespace UnityEditor.TestTools.TestRunner
     {
         public IAssemblyWrapper[] loadedAssemblies
         {
-            get { return EditorAssemblies.loadedAssemblies.OrderBy(a => a.FullName).Select(x => new EditorAssemblyWrapper(x)).ToArray(); }
+            get {
+                var assemblies = new SortedDictionary<string, EditorAssemblyWrapper>();
+                foreach (var assembly in EditorAssemblies.loadedAssemblies)
+                {
+                    assemblies.TryAdd(assembly.FullName, new EditorAssemblyWrapper(assembly));
+                }
+
+                return assemblies.Select(pair => (IAssemblyWrapper)pair.Value).ToArray();
+            }
         }
     }
 }

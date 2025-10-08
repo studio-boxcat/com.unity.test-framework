@@ -15,7 +15,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
         protected readonly WorkItemFactory m_Factory;
         protected bool m_ExecuteTestStartEvent;
         protected bool m_DontRunRestoringResult;
-        protected const int k_DefaultTimeout = 1000 * 180;
+        protected internal const int k_DefaultTimeout = 1000 * 180;
         public event EventHandler Completed;
 
         public bool ResultedInDomainReload { get; internal set; }
@@ -60,6 +60,11 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
         {
             Context = context;
 
+            if (Context.TestCaseTimeout == 0)
+            {
+                Context.TestCaseTimeout = k_DefaultTimeout;
+            }
+
             if (Test is TestAssembly)
                 Actions.AddRange(ActionsHelper.GetActionsFromTestAssembly((TestAssembly)Test));
             else if (Test is ParameterizedMethodSuite)
@@ -86,7 +91,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
             return PerformWork();
         }
 
-        protected void WorkItemComplete()
+        protected virtual void WorkItemComplete()
         {
             State = WorkItemState.Complete;
 

@@ -8,8 +8,8 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
     {
         public override IEnumerator Execute(TestJobData testJobData)
         {
-            var playerBuildOptions = testJobData.PlayerBuildOptions;
-            if ((playerBuildOptions.options & BuildOptions.AutoRunPlayer) != BuildOptions.AutoRunPlayer)
+            var playerBuildOptions = testJobData.GetCurrentBuildOptions();
+            if ((playerBuildOptions & BuildOptions.AutoRunPlayer) != BuildOptions.AutoRunPlayer)
             {
                 yield break;
             }

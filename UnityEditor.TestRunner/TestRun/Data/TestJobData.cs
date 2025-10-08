@@ -78,6 +78,9 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
         public ITestFilter testFilter;
 
         [NonSerialized]
+        public List<ITest> filteredTests = new();
+
+        [NonSerialized]
         public TestStartedEvent TestStartedEvent;
         [NonSerialized]
         public TestFinishedEvent TestFinishedEvent;
@@ -104,6 +107,11 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
         [SerializeField]
         public BuildPlayerOptions PlayerBuildOptions;
 
+#if UNITY_6000_1_OR_NEWER
+        [SerializeField]
+        public BuildPlayerWithProfileOptions PlayerBuildOptionsWithProfile;
+#endif
+
         [SerializeField]
         public PlaymodeTestsController PlaymodeTestsController;
 
@@ -114,7 +122,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
         public PlatformSpecificSetup PlatformSpecificSetup;
 
         [NonSerialized]
-        public RuntimePlatform? TargetRuntimePlatform;
+        public RuntimePlatform TargetRuntimePlatform = Application.platform;
 
         [SerializeField]
         public EnumerableTestState RetryRepeatState;
@@ -144,6 +152,20 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
         public void OnAfterDeserialize()
         {
             taskInfoStack = new Stack<TaskInfo>(savedTaskInfoStack);
+        }
+
+        /// <summary>
+        /// Fetches configured build options, both PlayerBuildOptionsWithProfile and PlayerBuildOptions
+        /// are initialized by  <see cref="LegacyPlayerRunTask"/>.
+        /// </summary>
+        public BuildOptions GetCurrentBuildOptions()
+        {
+#if UNITY_6000_1_OR_NEWER
+            if (PlayerBuildOptionsWithProfile.buildProfile != null)
+                return PlayerBuildOptionsWithProfile.options;
+#endif
+
+         return PlayerBuildOptions.options;
         }
 
         [Serializable]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using NUnit.Framework;
@@ -73,14 +74,16 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
         {
             UpstreamActions = new List<ITestAction>();
             SetUpTearDownState = new BeforeAfterTestCommandState();
+            OneTimeSetUpTearDownState = new BeforeAfterTestCommandState();
             OuterUnityTestActionState = new BeforeAfterTestCommandState();
             EnumerableTestState = new EnumerableTestState();
         }
 
-        public UnityTestExecutionContext(BeforeAfterTestCommandState setUpTearDownState,
+        public UnityTestExecutionContext(BeforeAfterTestCommandState setUpTearDownState, BeforeAfterTestCommandState oneTimeSetUpTearDownState,
             BeforeAfterTestCommandState outerUnityTestActionState, EnumerableTestState enumerableTestState) : this()
         {
             SetUpTearDownState = setUpTearDownState;
+            OneTimeSetUpTearDownState = oneTimeSetUpTearDownState;
             OuterUnityTestActionState = outerUnityTestActionState;
             EnumerableTestState = enumerableTestState;
         }
@@ -97,6 +100,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
             TestCaseTimeout = other.TestCaseTimeout;
             UpstreamActions = new List<ITestAction>(other.UpstreamActions);
             SetUpTearDownState = other.SetUpTearDownState;
+            OneTimeSetUpTearDownState = other.OneTimeSetUpTearDownState;
             OuterUnityTestActionState = other.OuterUnityTestActionState;
             EnumerableTestState = other.EnumerableTestState;
 
@@ -124,6 +128,7 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
         public ValueFormatter CurrentValueFormatter { get; private set; }
         public bool IsSingleThreaded { get; set; }
         public BeforeAfterTestCommandState SetUpTearDownState { get; set; }
+        public BeforeAfterTestCommandState OneTimeSetUpTearDownState { get; set; }
         public BeforeAfterTestCommandState OuterUnityTestActionState { get; set; }
         public EnumerableTestState EnumerableTestState { get; set; }
         public IgnoreTest[] IgnoreTests { get; set; }
@@ -150,6 +155,12 @@ namespace UnityEngine.TestRunner.NUnitExtensions.Runner
         public void AddFormatter(ValueFormatterFactory formatterFactory)
         {
             throw new NotImplementedException();
+        }
+        
+        public bool HasTimedOut()
+        {
+            return Stopwatch.GetTimestamp() - StartTicks >
+                   TestCaseTimeout * (Stopwatch.Frequency / 1000f);
         }
     }
 }

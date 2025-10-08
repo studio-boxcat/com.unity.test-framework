@@ -15,6 +15,14 @@ namespace UnityEngine.TestTools
 {
     internal abstract class BeforeAfterTestCommandBase<T> : DelegatingTestCommand, IEnumerableTestMethodCommand where T : class
     {
+        [Flags]
+        public enum ExecutionFlags
+        {
+            None = 0,
+            SkipAfterActions = 1 << 0,
+            SkipStateReset = 1 << 1
+        }
+
         private string m_BeforeErrorPrefix;
         private string m_AfterErrorPrefix;
         protected BeforeAfterTestCommandBase(TestCommand innerCommand, string beforeErrorPrefix, string afterErrorPrefix)
@@ -40,15 +48,27 @@ namespace UnityEngine.TestTools
             return cacheStorage[fixtureType].ToArray();
         }
 
-        protected static T[] GetTestActions(IDictionary<MethodInfo,  List<T>> cacheStorage, MethodInfo methodInfo)
+        protected static T[] GetTestActions(IDictionary<MethodInfo,  List<T>> cacheStorage, ITest test)
         {
+            var methodInfo = test.Method.MethodInfo;
             if (cacheStorage.TryGetValue(methodInfo, out var result))
             {
                 return result.ToArray();
             }
 
             var attributesForMethodInfo = new List<T>();
-            var attributes = methodInfo.GetCustomAttributes(false);
+            var parent = test.Parent;
+            while (parent != null)
+            {
+                if (parent.TypeInfo != null)
+                {
+                    attributesForMethodInfo.AddRange(parent.TypeInfo.GetCustomAttributes<T>(true));
+                }
+
+                parent = parent.Parent;
+            }
+
+            var attributes = methodInfo.GetCustomAttributes(true);
             foreach (var attribute in attributes)
             {
                 if (attribute is T attribute1)
@@ -93,6 +113,11 @@ namespace UnityEngine.TestTools
 
         public IEnumerable ExecuteEnumerable(ITestExecutionContext context)
         {
+            return ExecuteEnumerable(context, ExecutionFlags.None);
+        }
+
+        public IEnumerable ExecuteEnumerable(ITestExecutionContext context, ExecutionFlags flags)
+        {
             var unityContext = (UnityTestExecutionContext)context;
             var state = GetState(unityContext);
             if (state == null)
@@ -100,7 +125,7 @@ namespace UnityEngine.TestTools
                 throw new Exception($"No state in context for {GetType().Name}.");
             }
 
-            if(state.ShouldRestore)
+            if (state.ShouldRestore)
             {
                 state.ApplyContext(unityContext);
             }
@@ -197,7 +222,7 @@ namespace UnityEngine.TestTools
                 state.TestHasRun = true;
             }
 
-            while (state.NextAfterStepIndex < AfterActions.Length)
+            while (!flags.HasFlag(ExecutionFlags.SkipAfterActions) && state.NextAfterStepIndex < AfterActions.Length)
             {
                 state.TestAfterStarted = true;
                 var action = AfterActions[state.NextAfterStepIndex];
@@ -270,7 +295,8 @@ namespace UnityEngine.TestTools
                 state.NextAfterStepPc = 0;
             }
 
-            state.Reset();
+            if (!flags.HasFlag(ExecutionFlags.SkipStateReset))
+                state.Reset();
         }
 
         public override TestResult Execute(ITestExecutionContext context)

@@ -12,9 +12,10 @@ namespace UnityEditor.TestTools.TestRunner.Api
         /// Run EditMode tests.
         /// </summary>
         EditMode = 1 << 0,
+
         /// <summary>
         /// Run PlayMode tests.
         /// </summary>
-        PlayMode = 1 << 1
+        PlayMode = 1 << 1,
     }
 }

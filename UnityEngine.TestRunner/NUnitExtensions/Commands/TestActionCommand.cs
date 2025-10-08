@@ -18,7 +18,7 @@ namespace UnityEngine.TestTools
         {
             if (Test.TypeInfo.Type != null)
             {
-                BeforeActions = GetTestActions(m_TestActionsCache, Test.Method.MethodInfo);
+                BeforeActions = GetTestActions(m_TestActionsCache, Test);
                 AfterActions = BeforeActions;
             }
         }
@@ -30,12 +30,22 @@ namespace UnityEngine.TestTools
 
         protected override IEnumerator InvokeBefore(ITestAction action, Test test, UnityTestExecutionContext context)
         {
+            if (!action.Targets.HasFlag(ActionTargets.Test))
+            {
+                yield break;
+            }
+
             action.BeforeTest(test);
             yield return null;
         }
 
         protected override IEnumerator InvokeAfter(ITestAction action, Test test, UnityTestExecutionContext context)
         {
+            if (!action.Targets.HasFlag(ActionTargets.Test))
+            {
+                yield break;
+            }
+
             action.AfterTest(test);
             yield return null;
         }

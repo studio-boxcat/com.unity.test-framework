@@ -1,5 +1,3 @@
-using System;
-using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
@@ -10,7 +8,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun.Tasks
         {
         }
 
-        protected override void Action(IPrebuildSetup target)
+        protected override void Action(IPrebuildSetup target, TestJobData testJobData)
         {
             target.Setup();
         }

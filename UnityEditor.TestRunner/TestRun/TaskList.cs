@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEditor.SceneManagement;
 using UnityEditor.TestTools.TestRunner.Api;
@@ -55,10 +54,12 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             yield return new ReloadModifiedScenesTask();
             yield return new BuildNUnitFilterTask();
             yield return new BuildTestTreeTask(editMode ? TestPlatform.EditMode : TestPlatform.PlayMode);
+            yield return new FilterTestTreeTask();
             yield return new CreateBootstrapSceneTask(!editMode, !editMode, editMode ? NewSceneSetup.DefaultGameObjects : NewSceneSetup.EmptyScene);
             yield return new CreateEventsTask();
             yield return new RegisterCallbackDelegatorEventsTask();
             yield return new RegisterTestRunCallbackEventsTask();
+            yield return new PrebuildSetupWithTestDataTask(settings);
             yield return new PrebuildSetupTask();
             yield return new EnableTestOutLoggerTask();
             yield return new InitializeTestProgressTask();
@@ -83,6 +84,7 @@ namespace UnityEditor.TestTools.TestRunner.TestRun
             yield return new RestoreProjectSettingsTask();
             yield return new CleanupTestControllerTask();
         }
+            yield return new PostbuildCleanupWithTestDataTask(settings);
             yield return new PostbuildCleanupTask();
             yield return new CleanUpContext();
             yield return new ResetInteractionModeTask();
