@@ -1,9 +1,7 @@
 {
     "name": "UnityEngine.TestRunner",
     "references": [],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
@@ -11,5 +9,8 @@
         "nunit.framework.dll"
     ],
     "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
     "noEngineReferences": false
 }
