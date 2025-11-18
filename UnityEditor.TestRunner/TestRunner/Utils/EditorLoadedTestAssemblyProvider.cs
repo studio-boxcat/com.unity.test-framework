@@ -17,8 +17,8 @@ namespace UnityEditor.TestTools.TestRunner
             if (_editMode is null)
             {
                 var assemblies = EditorAssemblies.loadedAssemblies;
-                _editMode = new[] { assemblies.First(x => x.FullName.StartsWithOrdinal("Universe.Tests.Editor,")) };
-                _playMode = new[] { assemblies.First(x => x.FullName.StartsWithOrdinal("Universe.Tests.Play,")) };
+                _editMode = new[] { assemblies.First(x => x.FullName.StartsWithOrd("Universe.Tests.Editor,")) };
+                _playMode = new[] { assemblies.First(x => x.FullName.StartsWithOrd("Universe.Tests.Play,")) };
             }
 
             return mode switch
