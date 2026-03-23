@@ -72,11 +72,22 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             return false;
         }
 
-        private TestCount ParseTestTree(int depth, TreeViewItem rootItem, ITestAdaptor testElement)
+        private TestCount ParseTestTree(int depth, TreeViewItem rootItem, ITestAdaptor testElement, string namePrefix = null)
         {
             if (testElement == null)
             {
                 return default;
+            }
+
+            // Skip assembly nodes
+            if (testElement.IsTestAssembly)
+                return ParseChildren(depth, rootItem, testElement, namePrefix);
+
+            // Flatten namespace suites that don't directly contain test fixtures
+            if (IsNamespaceSuite(testElement) && !HasFixtureChildren(testElement))
+            {
+                var prefix = namePrefix != null ? namePrefix + "." + testElement.Name : testElement.Name;
+                return ParseChildren(depth, rootItem, testElement, prefix);
             }
 
             var testCount = new TestCount();
@@ -139,6 +150,8 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             var groupResult = new TestRunnerResult(testElement);
             results.Add(groupResult);
             var group = new TestTreeViewItem(testElement, depth, rootItem);
+            if (namePrefix != null)
+                group.displayName = namePrefix + "." + testElement.Name;
 
             depth++;
 
@@ -148,12 +161,6 @@ namespace UnityEditor.TestTools.TestRunner.GUI
 
                 testCount.TotalTestCount += childTestCount.TotalTestCount;
                 testCount.TotalFailedTestCount += childTestCount.TotalFailedTestCount;
-            }
-
-
-            if (testElement.IsTestAssembly && !testElement.HasChildren)
-            {
-                return testCount;
             }
 
             if (group.hasChildren)
@@ -166,6 +173,40 @@ namespace UnityEditor.TestTools.TestRunner.GUI
             group.SetResult(groupResult);
 
             return testCount;
+        }
+
+        private TestCount ParseChildren(int depth, TreeViewItem parent, ITestAdaptor element, string prefix)
+        {
+            var count = new TestCount();
+            foreach (var child in element.Children)
+            {
+                var c = ParseTestTree(depth, parent, child, prefix);
+                count.TotalTestCount += c.TotalTestCount;
+                count.TotalFailedTestCount += c.TotalFailedTestCount;
+            }
+            return count;
+        }
+
+        private static bool IsNamespaceSuite(ITestAdaptor test)
+        {
+            if (!test.IsSuite || test.IsTestAssembly || test.TypeInfo != null || !test.HasChildren)
+                return false;
+            // Root suite contains assemblies — not a namespace
+            foreach (var child in test.Children)
+                if (child.IsTestAssembly) return false;
+            return true;
+        }
+
+        // True if any child is a test fixture (has non-suite children like test methods)
+        private static bool HasFixtureChildren(ITestAdaptor ns)
+        {
+            foreach (var child in ns.Children)
+            {
+                if (child.TypeInfo == null) continue;
+                foreach (var gc in child.Children)
+                    if (!gc.IsSuite) return true;
+            }
+            return false;
         }
     }
 }
