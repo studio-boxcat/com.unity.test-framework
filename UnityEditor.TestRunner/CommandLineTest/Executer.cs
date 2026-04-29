@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.TestRunner.TestLaunchers;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 
@@ -38,8 +37,6 @@ namespace UnityEditor.TestTools.TestRunner.CommandLineTest
             try
             {
                 executionSettings = m_SettingsBuilder.BuildApiExecutionSettings(commandLineArgs);
-                if (executionSettings.targetPlatform.HasValue)
-                    RemotePlayerLogController.instance.SetBuildTarget(executionSettings.targetPlatform.Value);
             }
             catch (SetupException exception)
             {
@@ -93,20 +90,14 @@ namespace UnityEditor.TestTools.TestRunner.CommandLineTest
             Ok = 0,
             Failed = 2,
             RunError = 3,
-            PlatformNotFoundReturnCode = 4
         }
 
         public void SetUpCallbacks(ExecutionSettings executionSettings)
         {
-            RemotePlayerLogController.instance.SetLogsDirectory(executionSettings.DeviceLogsDirectory);
-
             var resultSavingCallback = ScriptableObject.CreateInstance<ResultsSavingCallbacks>();
             resultSavingCallback.m_ResultFilePath = executionSettings.TestResultsFile;
 
-            var logSavingCallback = ScriptableObject.CreateInstance<LogSavingCallbacks>();
-
             TestRunnerApi.RegisterTestCallback(resultSavingCallback);
-            TestRunnerApi.RegisterTestCallback(logSavingCallback);
             TestRunnerApi.RegisterTestCallback(new RunStateCallbacks());
         }
 
@@ -142,9 +133,6 @@ namespace UnityEditor.TestTools.TestRunner.CommandLineTest
 
         private static ExceptionHandling[] s_ExceptionHandlingMapping = {
             new ExceptionHandling(SetupException.ExceptionType.ScriptCompilationFailed, "Scripts had compilation errors.", ReturnCodes.RunError),
-            new ExceptionHandling(SetupException.ExceptionType.PlatformNotFound, "Test platform not found ({0}).", ReturnCodes.PlatformNotFoundReturnCode),
-            new ExceptionHandling(SetupException.ExceptionType.TestSettingsFileNotFound, "Test settings file not found at {0}.", ReturnCodes.RunError),
-            new ExceptionHandling(SetupException.ExceptionType.OrderedTestListFileNotFound, "Ordered test list file not found at {0}.", ReturnCodes.RunError)
         };
 
         private static IDictionary<TestRunState, string> s_StateMessages = new Dictionary<TestRunState, string>()

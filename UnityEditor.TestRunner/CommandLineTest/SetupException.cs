@@ -16,9 +16,6 @@ namespace UnityEditor.TestTools.TestRunner.CommandLineTest
         public enum ExceptionType
         {
             ScriptCompilationFailed,
-            PlatformNotFound,
-            TestSettingsFileNotFound,
-            OrderedTestListFileNotFound,
         }
     }
 }
