@@ -6,6 +6,5 @@ namespace UnityEditor.TestTools.TestRunner.CommandLineTest
     internal class ExecutionSettings
     {
         public string TestResultsFile;
-        public string DeviceLogsDirectory;
     }
 }
